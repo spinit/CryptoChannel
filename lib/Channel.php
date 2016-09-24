@@ -3,16 +3,8 @@ namespace CryptoChannel;
 
 class Channel
 {
-    public function initJavascript($nameJS, $dirRoot)
+    public function initJavascript($routeCrypto, $nameVar='CryptoChannel')
     {
-        return "
-        <script>
-        {$nameJS} = {
-            send : function(txt, fn) {
-                fn(txt + '{$dirRoot}');
-            }
-        }
-        </script>
-        ";
+        return "<script src='{$routeCrypto}?name={$nameVar}'></script>";
     }
 }

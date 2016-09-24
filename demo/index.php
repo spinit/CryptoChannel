@@ -4,18 +4,17 @@ use CryptoChannel\Channel;
 ?>
 <html>
     <head>
-    <script src="//code.jquery.com/jquery-3.1.1.js"
-            integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA="
-            crossorigin="anonymous"></script>
+        <meta charset="UTF-8">
+
 <?php
     $channel = new Channel();
-    echo $channel->initJavascript('KryptChannel', __DIR__);
+    echo $channel->initJavascript('CryptoChannelRoute.php','Krypto');
 ?>
     </head>
     <script>
         function talk() {
-            KryptChannel.send($('#message').val(), function(response){
-                $('#response').html(response);
+            Krypto.send('', document.getElementById('message').value, function(response){
+                document.getElementById('response').innerHTML = response;
             });
         }
     </script>
