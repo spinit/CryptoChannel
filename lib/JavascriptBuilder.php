@@ -15,9 +15,11 @@ namespace CryptoChannel;
  */
 class JavascriptBuilder
 {
+    private $channel;
+    
     private function __construct()
     {
-        
+        $this->channel = new Channel();
     }
     static function menage()
     {
@@ -39,8 +41,11 @@ class JavascriptBuilder
     }
     private function init($name)
     {
-        $script = <<<JSEND
+        $script = file_get_contents(__DIR__.'/../vendor/trenker/simple-rsa/javascript/rsa.min.js');
+        $script .= <<<JS_END
+                
 {$name} = new (function(){
+    {$this->channel->getKey()->toJavascript()}
     var routeUri = '{$_SERVER['REQUEST_URI']}'.split('?').shift();
     var pubKey = {'key' : ''};
     function doAjax(url, data, callback)
@@ -54,6 +59,8 @@ class JavascriptBuilder
             }
             data = query.join('&');
         }
+    
+        var crypted = rsaEncrypter.encrypt(data);
         var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
 
         xmlhttp.onreadystatechange = function() {
@@ -63,12 +70,12 @@ class JavascriptBuilder
         }
 
         xmlhttp.open("POST", url, true);
-        xmlhttp.send(data);
+        xmlhttp.send(crypted);
     }        
 
     this.send = doAjax;
 })();
-JSEND;
+JS_END;
         echo $script;
     }
     
