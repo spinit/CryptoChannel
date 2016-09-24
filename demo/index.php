@@ -13,7 +13,8 @@ use CryptoChannel\Channel;
     </head>
     <script>
         function talk() {
-            Krypto.send('', document.getElementById('message').value, function(response){
+            Krypto.send('echo.php', document.getElementById('message').value, function(response){
+                console.log(response);
                 document.getElementById('response').innerHTML = response;
             });
         }
