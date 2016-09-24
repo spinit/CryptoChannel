@@ -1,0 +1,21 @@
+{
+    "name": "spinit/CryptoChannel",
+    "type": "library",
+    "description": "implementazione php di un canale di comuncazione crittata attraverso la metodologia chiave simmetrica/asimmetrica",
+    "license": "LGPL v3.0",
+    "authors": [
+            {
+                    "name": "Ermanno Astolfi",
+                    "email": "ermanno.astolfi@spinit.it",
+                    "role": "Developer"
+            }
+    ],
+    "require": {
+            "php": ">=5.3.0",
+            "trenker/simple-rsa": "*"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {"CryptoChannel\\": "lib/"}
+    }
+}
