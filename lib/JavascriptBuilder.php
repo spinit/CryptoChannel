@@ -41,15 +41,50 @@ class JavascriptBuilder
     }
     private function init($name)
     {
-        $script = file_get_contents(__DIR__.'/../vendor/trenker/simple-rsa/javascript/rsa.min.js');
+        header('Content-Type: application/javascript');
+        $script = file_get_contents(__DIR__.'/../vendor/trenker/simple-rsa/javascript/rsa.min.js')."\n\n";
+        $script .= file_get_contents(__DIR__.'/../js/base64.js')."\n\n";
+        $script .= file_get_contents(__DIR__.'/../js/utf8.js')."\n\n";
+        $script .= file_get_contents(__DIR__.'/../js/aes.js')."\n\n";
+        $script .= file_get_contents(__DIR__.'/../js/aes-ctr.js')."\n\n";
+        $private = file_get_contents(__DIR__.'/../js/private.js');
         $script .= <<<JS_END
                 
 {$name} = new (function(){
+
     {$this->channel->getKey()->toJavascript()}
+
+    function randomString(length) {
+        //return 'ermanno12ermanno';
+        return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+    }
+
     var routeUri = '{$_SERVER['REQUEST_URI']}'.split('?').shift();
-    var pubKey = {'key' : ''};
+    
     function doAjax(url, data, callback)
     {
+        var key_message = randomString(150);; 
+        var key_crypted = rsaEncrypter.encrypt(key_message); 
+
+        function encrypt_message(plaintext)
+        {
+            var encryptedMessage = Aes.Ctr.encrypt(plaintext, key_message, 256);
+            // now we encrypt the key & iv with our public key
+
+            var hexlen = Number(key_crypted.length).toString(16);
+
+            // and concatenate our payload message
+            var encrypted = hexlen.length + hexlen + key_crypted + encryptedMessage;
+
+            return encrypted;
+        }
+
+        function decrypt_message(data)
+        {
+            var response = Aes.Ctr.decrypt(data, key_message, 256);
+            return response;
+        }
+
         data = data || {};
         if (typeof data == typeof {}) {
             var query = [];
@@ -59,13 +94,13 @@ class JavascriptBuilder
             }
             data = query.join('&');
         }
+        var crypted = encrypt_message(data);
     
-        var crypted = rsaEncrypter.encrypt(data);
         var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
 
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                callback(xmlhttp.responseText);
+                callback(decrypt_message(xmlhttp.responseText));
             }
         }
 

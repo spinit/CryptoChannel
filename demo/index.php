@@ -1,19 +1,29 @@
 <?php
 include('../vendor/autoload.php');
 use CryptoChannel\Channel;
+$channel = new Channel();
+
+if (isset($_GET['echo'])) {
+    $crypted = file_get_contents("php://input");
+    $data = $channel->decrypt($crypted);
+
+    $message = 'RICEVUTO : '.$data;
+
+    echo $channel->encrypt($message);
+    exit;
+}
 ?>
 <html>
     <head>
         <meta charset="UTF-8">
 
 <?php
-    $channel = new Channel();
     echo $channel->initJavascript('CryptoChannelRoute.php','Krypto');
 ?>
     </head>
     <script>
         function talk() {
-            Krypto.send('echo.php', document.getElementById('message').value, function(response){
+            Krypto.send('?echo', document.getElementById('message').value, function(response){
                 console.log(response);
                 document.getElementById('response').innerHTML = response;
             });
