@@ -61,20 +61,28 @@ class JavascriptBuilder
 
     var routeUri = '{$_SERVER['REQUEST_URI']}'.split('?').shift();
     
+    var key_message = false; 
+    var key_crypted = false;
     function doAjax(url, data, callback)
     {
-        var key_message = randomString(150);; 
-        var key_crypted = rsaEncrypter.encrypt(key_message); 
 
         function encrypt_message(plaintext)
         {
+            var prefix = '0';
+            // quando la chiave viene generata ... viene messa nel messaggio
+            if (!key_message) {
+                key_message = randomString(150);; 
+                key_crypted = rsaEncrypter.encrypt(key_message); 
+    
+                var hexlen = Number(key_crypted.length).toString(16);
+
+                prefix = hexlen.length + hexlen + key_crypted;
+            }
+    
+            // crittazione simmetrica
             var encryptedMessage = Aes.Ctr.encrypt(plaintext, key_message, 256);
-            // now we encrypt the key & iv with our public key
-
-            var hexlen = Number(key_crypted.length).toString(16);
-
             // and concatenate our payload message
-            var encrypted = hexlen.length + hexlen + key_crypted + encryptedMessage;
+            var encrypted = prefix + encryptedMessage;
 
             return encrypted;
         }
