@@ -33,7 +33,7 @@ class KeyData
         }
         
         if (!$sourcer) {
-            $sourcer = new KeySourcerStandard('_[key]');
+            $sourcer = new KeySourcerStandard('_[keys]');
         }
         
         // la chiave era stata memorizzata
