@@ -1,14 +1,27 @@
 <?php
 namespace CryptoChannel;
-
+/**
+ * Classe principale attraverso la quale crittare/decrittare i dati
+ */
 class Channel implements IfcRestore
 {
     private $key = false;
     
+    /**
+     * Restituisce l'inseme delle chiavi usate per la comunicazione
+     * @return CryptoChannel\KeyData
+     */
     public function getKey()
     {
         return $this->key;
     }
+    
+    /**
+     * Implementazione dell'ingerfaccia IfcRestore
+     * Utilizza la variabile $_SESSION['_']['key'] per memorizzare e recuperare
+     * l'oggettoo KeyData da utilizzare durante la sessione
+     * @return object
+     */
     public function loadObject()
     {
         if (!@$_SESSION['_']['key']) {
@@ -20,6 +33,14 @@ class Channel implements IfcRestore
     {
         $_SESSION['_']['key'] = serialize($data);
     }
+    
+    /**
+     *  Recupera l'insieme delle chiavi dal $wallet specificato.
+     * 
+     * Se non viene fornito un'altra fonte dati da cui recuperare la chiave usa
+     * se stesso per memorizzare la chiave nella sessione.
+     * @param type $wallet
+     */
     public function __construct(IfcRestore $wallet = null)
     {
         if (!$wallet) {
@@ -30,6 +51,13 @@ class Channel implements IfcRestore
         }
         $this->key = KeyData::getKey($wallet);
     }
+    
+    /**
+     * Genera il codice javascript da utilizzare sul browser per permettere
+     * la comunicazione crittata browser4server
+     * 
+     * @param string $nameVar nome della libreria da voler utilizzare sul browser
+     */
     public function initJavascript($nameVar='CryptoChannel')
     {
         $pubkey = str_replace("\n","\\\n",$this->key->getPublic());
@@ -131,18 +159,22 @@ JS_END;
         echo $script;
     }
     
+    /**
+     * Decrittazione dati
+     * @param type $message
+     * @return string
+     */
     public function decrypt($message)
     {
         return $this->key->decrypt($message);
     }
-    private function getSimmetricKey()
-    {
-        return @$_SESSION['_']['sym'];
-    }
-    private function setSimmetricKey($key)
-    {
-        $_SESSION['_']['sym'] = $key;
-    }
+    
+    /**
+     * Crittazione
+     * 
+     * @param string $data
+     * @return string
+     */
     public function encrypt($data)
     {
         return $this->key->encrypt($data);
