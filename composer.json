@@ -12,9 +12,11 @@
     ],
     "require": {
             "php": ">=5.3.0",
-            "trenker/simple-rsa": "*"
+            "phpseclib/phpseclib": "dev-master"
     },
-    "minimum-stability": "dev",
+    "suggest": {
+            "ext-openssl": "Install the OpenSSL extension for MUCH faster operations."
+    },
     "autoload": {
         "psr-4": {"CryptoChannel\\": "lib/"}
     }
