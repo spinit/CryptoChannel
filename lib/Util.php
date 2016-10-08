@@ -7,7 +7,6 @@ class Util
     {
         $root = __DIR__;
 
-        // permette di poter caricare classi che non sono in "src" ma sono in "features"
         $ns = __NAMESPACE__.'\\';
         if (substr($class,0,strlen($ns)) != $ns) {
             return;
