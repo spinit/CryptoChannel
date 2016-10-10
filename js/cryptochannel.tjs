@@ -1,0 +1,101 @@
+                
+{{nameVar}} = new (function(){
+
+    var pubkey = "{{pubKey}}";
+
+    function randomString(length) {
+        return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+    }
+
+    var key_message = false; 
+    var key_crypted = false;
+    var cryptionEnable = true;
+    var type = 'json';
+
+    function doAjax(url, data, callback)
+    {
+
+        function encrypt_message(plaintext)
+        {
+            var prefix = '0';
+            // quando la chiave viene generata ... viene messa nel messaggio
+            if (!key_message) {
+                key_message = randomString(150);
+                console.log(key_message);
+    
+                var encrypter = new JSEncrypt();
+                encrypter.setPublicKey(pubkey);
+                key_crypted = encrypter.encrypt(key_message); 
+
+                var hexlen = Number(key_crypted.length).toString(16);
+
+                prefix = hexlen.length + hexlen + key_crypted;
+            }
+    
+            // crittazione simmetrica
+            var encryptedMessage = Aes.Ctr.encrypt(plaintext, key_message, 256);
+            console.log([plaintext, prefix]);
+            // and concatenate our payload message
+            var encrypted = prefix + encryptedMessage;
+
+            return encrypted;
+        }
+
+        function decrypt_message(data)
+        {
+            var response = Aes.Ctr.decrypt(data, key_message, 256);
+            return response;
+        }
+
+        data = data || {};
+        if (data && typeof data != typeof "") {
+            data = JSON.stringify(data);
+/*
+            var query = [];
+            for (var key in data)
+            {
+                query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
+            }
+            data = query.join('&');
+*/
+        }
+        var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                if (xmlhttp.getResponseHeader('Cryption-Type') == 'CryptoChannel') {
+                    callback(decrypt_message(xmlhttp.responseText));
+                } else {
+                    callback(xmlhttp.responseText);
+                }
+            }
+        }
+
+        xmlhttp.open("POST", url, true);
+    
+        switch(type) {
+            case 'json':
+                xmlhttp.setRequestHeader('Content-type: application/json');
+                break;
+            case 'plain':
+            case 'html':
+            case 'text':
+                xmlhttp.setRequestHeader('Content-type','application/'+type);
+                break;
+        }
+        if (cryptionEnable) {
+            xmlhttp.setRequestHeader("Cryption-Type","CryptoChannel");
+            xmlhttp.send(encrypt_message(data));
+        } else {
+            xmlhttp.send(data);
+        }
+    }        
+
+    this.send = doAjax;
+    this.setCryption = function(a) {
+        cryptionEnable = a;
+    } 
+    this.setType = function(a) {
+        type = a;
+    }
+})();
+

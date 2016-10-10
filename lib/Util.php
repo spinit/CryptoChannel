@@ -6,7 +6,7 @@ class Util
     function autoload($class)
     {
         $root = __DIR__;
-
+        
         $ns = __NAMESPACE__.'\\';
         if (substr($class,0,strlen($ns)) != $ns) {
             return;
@@ -24,7 +24,6 @@ class Util
             $path_class .=  DIRECTORY_SEPARATOR . $item;
         }
         $path_class .= '.php';
-        
         if (file_exists($path_class)) {
             require_once $path_class;
         }

@@ -13,7 +13,7 @@ namespace CryptoChannel;
  *
  * @author ermanno
  */
-class KeyData
+class KeyServer
 {
     // seme chiave privata / pubblica
     private $key;
@@ -34,7 +34,7 @@ class KeyData
      * @param \CryptoChannel\IfcRestore $sourcer
      * @return \self
      */
-    public static function getKey(IfcRestore $sourcer = null)
+    public static function getKey(RestoreInterface $sourcer = null)
     {
         if (!$sourcer) {
             return new self();
@@ -42,11 +42,13 @@ class KeyData
         $instance = $sourcer->loadObject();
         if (!$instance) {
             $instance = new self($sourcer);
+        } else {
+            $instance->setSourcer($sourcer);
         }
         return $instance;
     }
     
-    protected function __construct(IfcRestore $sourcer = null)
+    protected function __construct(RestoreInterface $sourcer = null)
     {
         $this->sourcer = $sourcer;
         
@@ -63,11 +65,15 @@ class KeyData
         $pubKey = \openssl_pkey_get_details($this->key);
         $this->pubKey = $pubKey["key"];
         
-        if ($sourcer) {
-            $sourcer->storeObject($this);
+        if ($this->sourcer) {
+            $this->sourcer->storeObject($this);
         }
     }
     
+    public function setSourcer(RestoreInterface $sourcer = null)
+    {
+        $this->sourcer = $sourcer;
+    }
     public function getPrivate()
     {
         return $this->priKey;
@@ -117,7 +123,7 @@ class KeyData
             // chiave simmetrica crittata
             $sym_key_cry = base64_decode(substr($message, strlen($lenlen) + 1, $len));
             // chiave simmetrica decrittata con la chiave privata
-             \openssl_private_decrypt($sym_key_cry, $sym_key, openssl_pkey_get_private($this->getPrivate(),'phrase'));
+            \openssl_private_decrypt($sym_key_cry, $sym_key, openssl_pkey_get_private($this->getPrivate(),'phrase'));
             $this->setSimmetric($sym_key);
         }
         //messaggio crittato
@@ -125,4 +131,5 @@ class KeyData
         // messaggio decrittato con la chiave simmetrica
         $message_decrypt = AesCtr::decrypt($ciphertext, $this->getSimmetric(), 256);
         return $message_decrypt;
-    }}
+    }
+}

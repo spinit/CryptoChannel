@@ -1,7 +1,7 @@
 <?php
 namespace CryptoChannel;
 
-interface IfcRestore
+interface RestoreInterface
 {
     public function loadObject();
     public function storeObject($data);

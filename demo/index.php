@@ -1,26 +1,43 @@
 <?php
 include('../autoload.php');
-use CryptoChannel\Channel;
-$channel = new Channel();
 
+// per decodificare la comunicazione in ingresso
+use CryptoChannel\ChannelServer;
+
+// per codificare la comunicazione in uscita
+use CryptoChannel\ChannelClient;
+
+$channelServer = new ChannelServer();
+
+// Il comando "echo" ritorna al client una stampa lievemente corretta di ciò che gli è stato inviato
+// Assegnando ad "echo" un valore maggiore di zero verrà ritornato al client il valore calcolato da un altro server (se stesso) che riceverà come input quanto fino ad ora calcolato
+// Tale server comunicherà attraverso un'altra connessione crittata con un altro insieme di chiavi.
 if (isset($_GET['echo'])) {
-    $data = file_get_contents("php://input");
-    if (@$_SERVER['HTTP_CRYPTION_TYPE'] == 'CryptoChannel') {
-        header('Cryption-Type: CryptoChannel');
-        $data = $channel->decrypt($data);
+    $data = $channelServer->unpack(file_get_contents("php://input"));
+    $message = "Ricevuto [{$data}]";
+    if ($_GET['echo']>0) {
+        list($base, ) = explode('?', $_SERVER['REQUEST_URI']);
+        $base = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}{$base}";
+        
+        // chiamata ad altro server con altro insieme di chiavi
+        $channelClient = new ChannelClient();
+        $channelClient->setPublicUrl("{$base}?pubkey");
+        $message = $channelClient->getContent($base.'?echo='.($_GET['echo']-1), $message);
     }
-    $message = 'RICEVUTO : '.$data;
+    die($channelServer->pack($message));
+}
 
-    if (@$_SERVER['HTTP_CRYPTION_TYPE'] == 'CryptoChannel') {
-        $message = $channel->encrypt($message);
-    }
-    echo $message;
-    exit;
-}
+// librerie javascript necessarie al browser
 if (isset($_GET['initjs'])) {
-    $channel->initJavascript($_GET['initjs']);
-    exit;
+    die($channelServer->initJavascript($_GET['initjs']));
 }
+
+// pubblicazione chiave pubblica
+if (isset($_GET['pubkey'])) {
+    die($channelServer->getKey()->getPublic());
+}
+
+// Interfaccia grafica
 ?>
 <html>
     <head>
@@ -30,8 +47,10 @@ if (isset($_GET['initjs'])) {
     <script>
         function talk() {
             Krypto.setCryption(document.getElementById('cryptionFlag').checked);
-            Krypto.send('?echo', document.getElementById('message').value, function(response){
-                console.log(response);
+            Krypto.setType('html');
+            Krypto.send('?echo='+document.getElementById('echoNum').value, 
+                        document.getElementById('message').value,
+                        function(response){
                 document.getElementById('response').innerHTML = response;
             });
         }
@@ -42,6 +61,8 @@ if (isset($_GET['initjs'])) {
             <br/>
             <span>Trasmissione cifrata</span>
             <input type="checkbox" value="1" id="cryptionFlag"/>
+            <span>&nbsp;&nbsp;Salti</span>
+            <input type="text" size="3" value="0" id="echoNum"/>
             <button type="button" onclick="talk()" style="float:right">Invia</button>
             <br/>
             <pre id="response"></pre>
