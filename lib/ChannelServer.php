@@ -37,7 +37,7 @@ class ChannelServer
      * 
      * @param string $nameVar nome della libreria da voler utilizzare sul browser
      */
-    public function initJavascript($nameVar='CryptoChannel')
+    public function initJavascript($nameVar='ChannelClient')
     {
         $pubKey = str_replace("\n","\\\n",$this->key->getPublic());
         //$prikey = str_replace("\n","\\\n",$this->key->getPrivate());
