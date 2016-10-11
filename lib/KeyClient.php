@@ -9,7 +9,7 @@
 namespace CryptoChannel;
 
 /**
- * Description of KeyData
+ * Description of KeyClient
  *
  * @author ermanno
  */
@@ -37,6 +37,8 @@ class KeyClient
         $instance = $sourcer->loadObject();
         if (!$instance) {
             $instance = new self($sourcer);
+        } else {
+            $instance->setSourcer($sourcer);
         }
         return $instance;
     }
@@ -49,6 +51,11 @@ class KeyClient
             $sourcer->storeObject($this);
         }
         
+    }
+    
+    public function setSourcer(RestoreInterface $sourcer = null)
+    {
+        $this->sourcer = $sourcer;
     }
     
     public function setPublic($public)

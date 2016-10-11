@@ -17,53 +17,22 @@ namespace CryptoChannel;
 class ChannelOption 
 {
     private $option;
-    private $header;
-    
-    public function __construct($option, $cookies = array())
+    private $cookie;
+    public function __construct($option = array(), $cookie = array())
     {
-        $header = "Accept-language: en\r\n";
         
         if (!is_array($option)) {
             $option = array();
         }
-        if (!is_array($cookies)) {
-            $cookies = array();
+        if (!is_array($cookie)) {
+            $cookie = array();
         }
         $option['method'] = isset($option['method']) ? $option['method']:'POST';
         $option['crypting'] = !isset($option['crypting']) or $option['crypting'];
         $option['type'] = isset($option['type']) ? $option['type']:'json';
-        
-        if (isset($option['headers'])){
-            if (is_array($option['headers'])) {
-                $header .= implode('\r\n',$option['headers']);
-            } else {
-                $header .= trim($option['headers']);
-            }
-            $header .= "\r\n";
-        }
-        switch($option['type']) {
-            case 'json':
-                $header .= "Content-Type: application/json\r\n";
-                break;
-            case 'html':
-            case 'xml':
-            case 'plain':
-                $header .= "Content-Type: text/{$option['type']}; charset=UTF-8\r\n";
-                break;
-            default:
-                $header .= "Content-Type: {$option['type']}\r\n";
-        }
-        if ($option['crypting']) {
-            $header .= "Cryption-Type: CryptoChannel\r\n";
-        }
-        $str_cookies = '';
-        foreach($cookies as $k=>$v) {
-            $str_cookies .= $k.'='.$v.';';
-        }
-        $header .= "Cookie: {$str_cookies}\r\n";
                         
         $this->option = $option;
-        $this->header = $header;
+        $this->cookie = $cookie;
     }
     
     public function getMethod()
@@ -72,7 +41,11 @@ class ChannelOption
     }
     public function getHeader()
     {
-        return $this->header;
+        return "Accept-language: en\r\n".
+            $this->getHeaderOption().
+            $this->getHeaderContentType().
+            $this->getHeaderCryptionType().
+            $this->getHeaderCookie();
     }
     public function isCrypting()
     {
@@ -81,5 +54,58 @@ class ChannelOption
     public function getType()
     {
         return $this->option['type'];
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    private function getHeaderOption()
+    {
+        $header = '';
+        if (isset($this->option['headers'])){
+            if (is_array($this->option['headers'])) {
+                $header .= implode('\r\n',$this->option['headers']);
+            } else {
+                $header .= trim($this->option['headers']);
+            }
+            $header .= "\r\n";
+        }
+        return $header;
+    }
+    private function getHeaderContentType()
+    {
+        $header = '';
+        switch($this->option['type']) {
+            case 'json':
+                $header .= "Content-Type: application/json\r\n";
+                break;
+            case 'html':
+            case 'xml':
+            case 'plain':
+                $header .= "Content-Type: text/{$this->option['type']}; charset=UTF-8\r\n";
+                break;
+            default:
+                $header .= "Content-Type: {$this->option['type']}\r\n";
+        }
+        return $header;
+    }
+    private function getHeaderCryptionType()
+    {
+        $header = '';
+        if ($this->option['crypting']) {
+            $header .= "Cryption-Type: CryptoChannel\r\n";
+        }
+        return $header;
+    }
+    private function getHeaderCookie()
+    {
+        $header = '';
+        $str_cookies = '';
+        foreach($this->cookie as $k=>$v) {
+            $str_cookies .= $k.'='.$v.';';
+        }
+        $header .= "Cookie: {$str_cookies}\r\n";
+        return $header;
     }
 }
