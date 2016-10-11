@@ -4,6 +4,9 @@
          bootstrap="../autoload.php"
          verbose="true"
          timeoutForSmallTests="10">
+    <logging>
+        <log type="coverage-clover" target="clover.xml"/>
+    </logging>
     <testsuites>
         <testsuite name="CryptoChannel">
             <directory suffix="Test.php">../tests</directory>
