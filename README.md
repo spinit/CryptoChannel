@@ -1,6 +1,6 @@
 # CryptoChannel
 Implementazione js+php* di un canale di una comunicazione crittata attraverso
-la metodologia chiave simmetrica/asimmetrica.
+la metodologia chiave simmetrica (RSA) + asimmetrica (AES-256).
 
 La libreria maschera i seguenti passaggi:
 - generazione chiave pubblica/privata da parte del destinatario quando il mittente inizilizza una sessione di comunicazione
