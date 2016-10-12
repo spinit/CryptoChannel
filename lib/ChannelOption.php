@@ -63,7 +63,7 @@ class ChannelOption
     private function getHeaderOption()
     {
         $header = '';
-        if (isset($this->option['headers'])){
+        if (isset($this->option['headers'])) {
             if (is_array($this->option['headers'])) {
                 $header .= implode('\r\n',$this->option['headers']);
             } else {
