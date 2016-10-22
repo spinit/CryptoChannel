@@ -21,8 +21,8 @@
             // quando la chiave viene generata ... viene messa nel messaggio
             if (!key_message) {
                 key_message = randomString(150);
-                console.log(key_message);
-    
+                console.log('key',key_message);
+
                 var encrypter = new JSEncrypt();
                 encrypter.setPublicKey(pubkey);
                 key_crypted = encrypter.encrypt(key_message); 
@@ -50,14 +50,6 @@
         data = data || {};
         if (data && typeof data != typeof "") {
             data = JSON.stringify(data);
-/*
-            var query = [];
-            for (var key in data)
-            {
-                query.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]));
-            }
-            data = query.join('&');
-*/
         }
         var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
         xmlhttp.onreadystatechange = function() {
@@ -83,8 +75,9 @@
                 break;
         }
         if (cryptionEnable) {
+            var message = encrypt_message(data);
             xmlhttp.setRequestHeader("Cryption-Type","CryptoChannel");
-            xmlhttp.send(encrypt_message(data));
+            xmlhttp.send(message);
         } else {
             xmlhttp.send(data);
         }

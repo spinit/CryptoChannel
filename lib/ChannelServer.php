@@ -5,6 +5,10 @@ namespace CryptoChannel;
  */
 class ChannelServer
 {
+    /**
+     *
+     * @var CryptoChannel\KeyServer
+     */
     private $key = false;
     
     /**
@@ -16,6 +20,14 @@ class ChannelServer
         return $this->key;
     }
     
+    public function isCallType($type)
+    {
+        return @$_SERVER['HTTP_CRYPTOCHANNEL_TYPE'] == $type;
+    }
+    public function getCallType()
+    {
+        return @$_SERVER['HTTP_CRYPTOCHANNEL_TYPE'];
+    }
     /**
      *  Recupera l'insieme delle chiavi dal $wallet specificato.
      * 

@@ -7,6 +7,12 @@ class ChannelClient
 {
     private $key = false;
     
+    private $callType = '';
+    
+    private $returnDataCrypted = 1;
+    
+    private $keyPublicUrl = '';
+    
     /**
      * Restituisce l'inseme delle chiavi usate per la comunicazione
      * @return CryptoChannel\KeyData
@@ -51,10 +57,15 @@ class ChannelClient
     public function getContent($url, $data)
     {
         if (!$this->key->getPublic()) {
-            $pKey = $this->send($this->keyPublicUrl);
+            $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false));
             $this->key->setPublic($pKey);
         }
-        return $this->send($url, $data, array('crypting'=>$this->returnDataCrypted));
+        $content = $this->send($url, $data, array('crypting'=>$this->returnDataCrypted));
+        return $content;
+    }
+    public function setCallType($type)
+    {
+        $this->callType = $type;
     }
     /**
      * Invia i dati ad un servizio esterno
@@ -65,9 +76,8 @@ class ChannelClient
         
         $cookies = $this->cookie->loadObject();
         $channelOption = new ChannelOption($option, $cookies);
-        if ($channelOption->isCrypting()) {
-            $data = $this->getKey()->encrypt($data);
-        }
+        $channelOption->setCallType($this->callType);
+        
         switch($channelOption->getType()) {
             case 'json' : 
                 if (is_array($data)) {
@@ -82,6 +92,11 @@ class ChannelClient
                 }
                 break;
         }
+        
+        if ($channelOption->isCrypting()) {
+            $data = $this->getKey()->encrypt($data);
+        }
+        
         $opts = array(
           'http'=>array(
             'method'    => $channelOption->getMethod($option),
@@ -90,19 +105,20 @@ class ChannelClient
           )
         );
         $context = stream_context_create($opts);
-
         // Open the file using the HTTP headers set above
         $content = file_get_contents($url, false, $context);
+        
         foreach($http_response_header as $s) {
             if(preg_match('|^Set-Cookie:\s*([^=]+)=([^;]+);(.+)$|', $s, $parts)) {
                 $cookies[$parts[1]] = $parts[2];
             }
         }
-        $content.="\n".json_encode($cookies);
+        //$content.="\n".json_encode($cookies);
         $this->cookie->storeObject($cookies);
         if ($channelOption->isCrypting()) {
-            $content = $this->getKey()->encrypt($content);
+            $content = $this->getKey()->decrypt($content);
         }
+        
         return $content;
     }
 }

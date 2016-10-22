@@ -123,7 +123,7 @@ class KeyServer
             // chiave simmetrica crittata
             $sym_key_cry = base64_decode(substr($message, strlen($lenlen) + 1, $len));
             // chiave simmetrica decrittata con la chiave privata
-            \openssl_private_decrypt($sym_key_cry, $sym_key, openssl_pkey_get_private($this->getPrivate(),'phrase'));
+            \openssl_private_decrypt($sym_key_cry, $sym_key, openssl_pkey_get_private($this->getPrivate(), 'phrase'));
             $this->setSimmetric($sym_key);
         }
         //messaggio crittato

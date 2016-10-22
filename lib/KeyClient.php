@@ -112,7 +112,8 @@ class KeyClient
                 )
             );
             // crittazione chiave
-            \openssl_public_encrypt($this->getSimmetric(), $cry_sym, $this->getPublic());
+            \openssl_public_encrypt($this->getSimmetric(), $cry_sym_bin, $this->getPublic());
+            $cry_sym = base64_encode($cry_sym_bin);
             
             // ricalcolo del prefix
             $len = \dechex(\strlen($cry_sym));

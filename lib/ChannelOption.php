@@ -18,6 +18,8 @@ class ChannelOption
 {
     private $option;
     private $cookie;
+    private $callType='';
+    
     public function __construct($option = array(), $cookie = array())
     {
         
@@ -27,21 +29,29 @@ class ChannelOption
         if (!is_array($cookie)) {
             $cookie = array();
         }
+        
         $option['method'] = isset($option['method']) ? $option['method']:'POST';
-        $option['crypting'] = !isset($option['crypting']) or $option['crypting'];
+        $option['crypting'] = (!isset($option['crypting']) or $option['crypting']);
         $option['type'] = isset($option['type']) ? $option['type']:'json';
                         
         $this->option = $option;
         $this->cookie = $cookie;
     }
     
+    public function setCallType($type)
+    {
+        $this->callType = $type;
+    }
+    
     public function getMethod()
     {
         return $this->option['method'];
     }
+    
     public function getHeader()
     {
         return "Accept-language: en\r\n".
+            "CryptoChannel-Type: {$this->callType}\r\n".
             $this->getHeaderOption().
             $this->getHeaderContentType().
             $this->getHeaderCryptionType().

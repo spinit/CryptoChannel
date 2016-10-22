@@ -7,13 +7,20 @@ use CryptoChannel\ChannelServer;
 // per codificare la comunicazione in uscita
 use CryptoChannel\ChannelClient;
 
+use CryptoChannel\Util;
+
 $channelServer = new ChannelServer();
 
 // Il comando "echo" ritorna al client una stampa lievemente corretta di ciò che gli è stato inviato
 // Assegnando ad "echo" un valore maggiore di zero verrà ritornato al client il valore calcolato da un altro server (se stesso) che riceverà come input quanto fino ad ora calcolato
 // Tale server comunicherà attraverso un'altra connessione crittata con un altro insieme di chiavi.
 if (isset($_GET['echo'])) {
-    $data = $channelServer->unpack(file_get_contents("php://input"));
+    $content = file_get_contents("php://input");
+    
+    Util::log('echo '.@$_GET['echo'], $content);
+    Util::log('sym key', $channelServer->getKey()->getSimmetric());
+    
+    $data = $channelServer->unpack($content);
     $message = "Ricevuto [{$data}]";
     if ($_GET['echo']>0) {
         list($base, ) = explode('?', $_SERVER['REQUEST_URI']);
@@ -22,7 +29,10 @@ if (isset($_GET['echo'])) {
         // chiamata ad altro server con altro insieme di chiavi
         $channelClient = new ChannelClient();
         $channelClient->setPublicUrl("{$base}?pubkey");
+        $channelClient->setCallType('Client-'.$_GET['echo']);
+        $channelClient->enableCryption(1);
         $message = $channelClient->getContent($base.'?echo='.($_GET['echo']-1), $message);
+        //$message .= '-'.$channelClient->getKey()->getSimmetric();
     }
     die($channelServer->pack($message));
 }

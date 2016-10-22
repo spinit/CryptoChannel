@@ -1,8 +1,13 @@
 <?php
 namespace CryptoChannel;
 
+
+\date_default_timezone_set('Europe/Rome');
+
 class Util
 {
+    private static $logFile = '';
+    
     function autoload($class)
     {
         $root = __DIR__;
@@ -27,6 +32,33 @@ class Util
         if (file_exists($path_class)) {
             require_once $path_class;
         }
+    }
+    static function setLogFilg($file)
+    {
+        self::$logFile = $file;
+    }
+    static function log($title, $msg='')
+    {
+        if (!self::$logFile) {
+            return;
+        }
+        $fp = fopen(self::$logFile,'a');
+        if (!$fp) {
+            return;
+        }
+        $root = realpath(__DIR__.'/..');
+        $debug = debug_backtrace();
+        $file = substr($debug[0]['file'], strlen($root));
+        $line = $debug[0]['line'];
+        $content = "== ".date("H:i:s")." == ".getmypid()." == {$file}:{$line} >> $title";
+        if ($msg) {
+            if (!is_string($msg)) {
+                $msg = json_encode($msg);
+            }
+            $content .= "\n".$msg;
+        }
+        fwrite($fp, $content."\n");
+        fclose($fp);
     }
 }
 
