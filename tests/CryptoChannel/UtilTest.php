@@ -16,8 +16,10 @@ class UtilTest extends \PHPUnit_Framework_TestCase
     
     public function testLog()
     {
+        if (is_file('/tmp/test-cryptochannel-util.log')) {
+            unlink('/tmp/test-cryptochannel-util.log');
+        }
         Util::setLogFile('');
-        unlink('/tmp/test-cryptochannel-util.log');
         Util::log('test');
         $this->assertFalse(is_file('/tmp/test-cryptochannel-util.log'));
         
