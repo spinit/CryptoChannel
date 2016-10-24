@@ -106,6 +106,7 @@ class ChannelClient
             'content'   => $data
           )
         );
+        
         $context = stream_context_create($opts);
         // Open the file using the HTTP headers set above
         $content = file_get_contents($url, false, $context);
@@ -114,10 +115,15 @@ class ChannelClient
             if(preg_match('|^Set-Cookie:\s*([^=]+)=([^;]+);(.+)$|', $s, $parts)) {
                 $cookies[$parts[1]] = $parts[2];
             }
+            if(preg_match('|^Cryption-Type:\s*(.+)$|', $s, $parts)) {
+                $cryption = strtolower($parts[1]);
+            }
         }
+        
         //$content.="\n".json_encode($cookies);
+        Util::log('Cryption Type : ' . $cryption);
         $this->cookie->storeObject($cookies);
-        if ($channelOption->isCrypting()) {
+        if ($cryption == 'cryptochannel') {
             Util::log('Content from Server', $content);
             $content = $this->getKey()->decrypt($content);
             Util::log('decrypted', $content);
