@@ -119,7 +119,7 @@ class KeyClient
             $len = \dechex(\strlen($cry_sym));
             $prefix = strlen($len) . $len . $cry_sym;
         }
-        $message = AesCtr::encrypt($message, $this->symKey, 256);
+        $message = Util::encrypt($message, $this->symKey);
         return $prefix . $message;
     }
 
@@ -132,7 +132,7 @@ class KeyClient
     public function decrypt($message)
     {
         // messaggio decrittato con la chiave simmetrica
-        $message_decrypt = AesCtr::decrypt($message, $this->getSimmetric(), 256);
+        $message_decrypt = Util::decrypt($message, $this->getSimmetric());
         return $message_decrypt;
     }
 }

@@ -94,7 +94,9 @@ class ChannelClient
         }
         
         if ($channelOption->isCrypting()) {
+            Util::log('send to Server', $data);
             $data = $this->getKey()->encrypt($data);
+            Util::log('crypted', $data);
         }
         
         $opts = array(
@@ -116,7 +118,9 @@ class ChannelClient
         //$content.="\n".json_encode($cookies);
         $this->cookie->storeObject($cookies);
         if ($channelOption->isCrypting()) {
+            Util::log('Content from Server', $content);
             $content = $this->getKey()->decrypt($content);
+            Util::log('decrypted', $content);
         }
         
         return $content;

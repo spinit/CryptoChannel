@@ -60,6 +60,15 @@ class Util
         fwrite($fp, $content."\n");
         fclose($fp);
     }
+    public static function encrypt($plaintext, $password, $salt='!kQm*fF3pXe1Kbm%9')
+    {
+        return AesCtr::encrypt($plaintext, $password, 256);
+    } 
+    public static function decrypt($encrypted, $password, $salt='!kQm*fF3pXe1Kbm%9')
+    {
+        return AesCtr::decrypt($encrypted, $password, 256);
+    }
+
 }
 
 return new Util();

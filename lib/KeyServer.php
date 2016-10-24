@@ -102,7 +102,7 @@ class KeyServer
      */
     public function encrypt($data)
     {
-        $message = AesCtr::encrypt($data, $this->symKey, 256);
+        $message = Util::encrypt($data, $this->symKey);
         return $message;
     }
 
@@ -129,7 +129,7 @@ class KeyServer
         //messaggio crittato
         $ciphertext = substr($message, $len + strlen($lenlen) + 1);
         // messaggio decrittato con la chiave simmetrica
-        $message_decrypt = AesCtr::decrypt($ciphertext, $this->getSimmetric(), 256);
+        $message_decrypt = Util::decrypt($ciphertext, $this->getSimmetric());
         return $message_decrypt;
     }
 }
