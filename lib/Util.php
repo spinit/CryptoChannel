@@ -33,7 +33,7 @@ class Util
             require_once $path_class;
         }
     }
-    static function setLogFilg($file)
+    static function setLogFile($file)
     {
         self::$logFile = $file;
     }
