@@ -22,6 +22,12 @@ class KeyClient
     
     private $sourcer;
     
+    // token locale generato in fase di generazione chiave simmetrica
+    private $token;
+    
+    // token che il server ha inviato nell'ultima chiamata
+    private $tokenServer;
+    
     /**
      * La chiave generata si affida ad un servizio esterno per la sua memorizzazione
      *  e gestione del recupero. Essa è unica 
@@ -56,11 +62,16 @@ class KeyClient
     public function setSourcer(RestoreInterface $sourcer = null)
     {
         $this->sourcer = $sourcer;
+        return $this;
     }
     
     public function setPublic($public)
     {
-        return $this->pubKey = $public;
+        $this->pubKey = $public;
+        if ($this->symKey) {
+            $this->setSimmetric($this->symKey);
+        }
+        return $this;
     }
     
     public function getPublic()
@@ -76,11 +87,38 @@ class KeyClient
     public function setSimmetric($key)
     {
         $this->symKey = $key;
+        // crittazione chiave
+        
+        \openssl_public_encrypt($key, $cry_sym_bin, $this->getPublic());
+        $this->cryKey = base64_encode($cry_sym_bin);
+        
+        // token di verifica invio chiave
+        $this->token = $this->makeRandomString(4);
+        
+        // salvataggio stato
         if ($this->sourcer) {
             $this->sourcer->storeObject($this);
         }
+        return $this;
     }
     
+    /**
+     * Generazione chiave simmetrica
+     */
+    private function makeRandomString($length)
+    {
+        $newKey = substr(
+            str_shuffle(
+                str_repeat(
+                    $x='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                    ceil($length/strlen($x))
+                )
+            ),
+            1,
+            $length
+        );
+        return $newKey;
+    }
     /**
      * Crittazione dati da inviare al server
      *
@@ -97,30 +135,16 @@ class KeyClient
         $prefix = '0';
         
         if (!$this->getSimmetric()) {
-            // generazione/crittazione/trasmissione chiave simmetrica
-            $length = 100;
-            $this->setSimmetric( 
-                substr(
-                    str_shuffle(
-                        str_repeat(
-                            $x='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                            ceil($length/strlen($x))
-                        )
-                    ),
-                    1,
-                    $length
-                )
-            );
-            // crittazione chiave
-            \openssl_public_encrypt($this->getSimmetric(), $cry_sym_bin, $this->getPublic());
-            $cry_sym = base64_encode($cry_sym_bin);
-            
-            // ricalcolo del prefix
-            $len = \dechex(\strlen($cry_sym));
-            $prefix = strlen($len) . $len . $cry_sym;
+            $this->setSimmetric($this->makeRandomString(100));
         }
-        $message = Util::encrypt($message, $this->symKey);
-        return $prefix . $message;
+        // se il token indicato è diverso da quello previsto allora 
+        // la chiave viene reinviata al server
+        if ($this->getToken() != $this->getServerToken()) {
+            // ricalcolo del prefix
+            $len = \dechex(\strlen($this->cryKey));
+            $prefix = strlen($len) . $len . $this->cryKey;
+        }
+        return $prefix . Util::encrypt($message, $this->getSimmetric());
     }
 
     /**
@@ -134,5 +158,24 @@ class KeyClient
         // messaggio decrittato con la chiave simmetrica
         $message_decrypt = Util::decrypt($message, $this->getSimmetric());
         return $message_decrypt;
+    }
+    
+    public function getToken()
+    {
+        return $this->token;        
+    }
+    
+    public function setServerToken($token)
+    {
+        $this->tokenServer = $token;
+        // salvataggio stato
+        if ($this->sourcer) {
+            $this->sourcer->storeObject($this);
+        }
+    }
+    
+    public function getServerToken()
+    {
+        return $this->tokenServer;
     }
 }

@@ -11,6 +11,8 @@
     var key_crypted = false;
     var cryptionEnable = true;
     var type = 'json';
+    var token = '';
+    var serverToken = '';
 
     function doAjax(url, data, callback)
     {
@@ -25,10 +27,11 @@
 
                 var encrypter = new JSEncrypt();
                 encrypter.setPublicKey(pubkey);
-                key_crypted = encrypter.encrypt(key_message); 
-
+                key_crypted = encrypter.encrypt(key_message);
+                token = randomString(4);
+            }
+            if (token != serverToken) {
                 var hexlen = Number(key_crypted.length).toString(16);
-
                 prefix = hexlen.length + hexlen + key_crypted;
             }
     
@@ -55,7 +58,10 @@
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 if (xmlhttp.getResponseHeader('Cryption-Type') == 'CryptoChannel') {
+                    console.log('ricevuto', serverToken, xmlhttp.getResponseHeader('CryptoChannel-Status'));
+                    serverToken = xmlhttp.getResponseHeader('CryptoChannel-Token');
                     callback(decrypt_message(xmlhttp.responseText));
+                    // TODO: se il token è diverso ... occorre rieffettuare la chiamata
                 } else {
                     callback(xmlhttp.responseText);
                 }
@@ -66,17 +72,18 @@
     
         switch(type) {
             case 'json':
-                xmlhttp.setRequestHeader('Content-type: application/json');
+                xmlhttp.setRequestHeader('Content-type','application/json');
                 break;
             case 'plain':
             case 'html':
             case 'text':
-                xmlhttp.setRequestHeader('Content-type','application/'+type);
+                xmlhttp.setRequestHeader('Content-type','text/'+type);
                 break;
         }
         if (cryptionEnable) {
             var message = encrypt_message(data);
-            xmlhttp.setRequestHeader("Cryption-Type","CryptoChannel");
+            xmlhttp.setRequestHeader("Cryption-Type", "CryptoChannel");
+            xmlhttp.setRequestHeader("CryptoChannel-Token", token);
             xmlhttp.send(message);
         } else {
             xmlhttp.send(data);

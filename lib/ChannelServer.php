@@ -76,7 +76,13 @@ class ChannelServer
     public function unpack($message)
     {
         if (@$_SERVER['HTTP_CRYPTION_TYPE'] == 'CryptoChannel') {
-            return $this->key->decrypt($message);
+            try {
+                return $this->key->decrypt($message, @$_SERVER['HTTP_CRYPTOCHANNEL_TOKEN']);
+            } catch (ChannelException $e) {
+                header('CryptoChannel-Status: ERROR');
+                header('CryptoChannel-Message: '.$e->getMessage());
+                return false;
+            }
         }
         return $message;
     }
@@ -85,6 +91,7 @@ class ChannelServer
     {
         if (@$_SERVER['HTTP_CRYPTION_TYPE'] == 'CryptoChannel') {
             header('Cryption-Type: CryptoChannel');
+            header('CryptoChannel-Token: '.$this->key->getToken());
             return $this->key->encrypt($message);
         }
         return $message;

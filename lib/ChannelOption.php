@@ -19,8 +19,10 @@ class ChannelOption
     private $option;
     private $cookie;
     private $callType='';
+    private $responseCryption='';
+    private $status = '';
     
-    public function __construct($option = array(), $cookie = array())
+    public function __construct($option = array(), $cookie = array(), $key = false)
     {
         
         if (!is_array($option)) {
@@ -29,6 +31,7 @@ class ChannelOption
         if (!is_array($cookie)) {
             $cookie = array();
         }
+        $this->key = $key;
         
         $option['method'] = isset($option['method']) ? $option['method']:'POST';
         $option['crypting'] = (!isset($option['crypting']) or $option['crypting']);
@@ -105,6 +108,7 @@ class ChannelOption
         $header = '';
         if ($this->option['crypting']) {
             $header .= "Cryption-Type: CryptoChannel\r\n";
+            $header .= "CryptoChannel-Token: {$this->key->getToken()}\r\n";
         }
         return $header;
     }
@@ -117,5 +121,79 @@ class ChannelOption
         }
         $header .= "Cookie: {$str_cookies}\r\n";
         return $header;
+    }
+    
+    private function encodeData($data)
+    {
+        switch($this->getType()) {
+            case 'json' : 
+                if (is_array($data)) {
+                    $data = \json_encode($data);
+                }
+                break;
+            case 'html':
+            case 'xml':
+            case 'plain':
+                if (is_array($data)) {
+                    $data = http_build_query($data);
+                }
+                break;
+        }
+        return $data;
+    }
+    
+    public function sendData($data)
+    {
+        $data = $this->encodeData($data);
+        // i dati vengono crittati se richiesto
+        Util::log('send to Server', $data);
+        if ($this->isCrypting() and $this->key) {
+            $data = $this->key->encrypt($data);
+            Util::log('crypted', substr($data,0,10));
+        }
+        return $data;
+    }
+    
+    public function parseResponse($headers, $data)
+    {
+        $cryption = '';
+        foreach($headers as $s) {
+            $parts = array();
+            if(preg_match('|^Set-Cookie:\s*([^=]+)=([^;]+);(.+)$|', $s, $parts)) {
+                $this->cookie[$parts[1]] = $parts[2];
+            }
+            if(preg_match('|^Cryption-Type:\s*(.+)$|', $s, $parts)) {
+                $cryption = strtolower($parts[1]);
+            }
+            if(preg_match('|^CryptoChannel-Token:\s*(.+)$|', $s, $parts)) {
+                $this->key->setServerToken(strtolower($parts[1]));
+            }
+            if(preg_match('|^CryptoChannel-Status:\s*(.+)$|', $s, $parts)) {
+                $this->status = (strtolower($parts[1]));
+            }
+        }
+        //$content.="\n".json_encode($cookies);
+        Util::log('Cryption Type : ' . $cryption);
+        Util::log('Content from Server', $data);
+        if ($cryption == 'cryptochannel' and $this->key) {
+            $data = $this->key->decrypt($data);
+            Util::log('decrypted', $data);
+        }
+        
+        return $data;
+    }
+    
+    public function getCookie()
+    {
+        $arg = func_get_args();
+        if (!count($arg)) {
+            return $this->cookie;
+        } 
+        return @$this->cookie[$arg[0]];
+    }
+    
+    public function getStatus()
+    {
+        return $this->status;
     }
 }

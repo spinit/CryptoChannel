@@ -9,9 +9,9 @@
 namespace CryptoChannel;
 
 /**
- * Description of KeyData
+ * Description of KeyServer
  *
- * @author ermanno
+ * @author ermanno.astolfi@spinit.it
  */
 class KeyServer
 {
@@ -24,6 +24,8 @@ class KeyServer
     private $pubKey;
     // chiave simmetrica
     private $symKey;
+    // token di verifica
+    private $token;
     
     private $sourcer;
     
@@ -51,7 +53,6 @@ class KeyServer
     protected function __construct(RestoreInterface $sourcer = null)
     {
         $this->sourcer = $sourcer;
-        
         $config = array(
             "digest_alg" => "sha512",
             "private_key_bits" => 4096,
@@ -86,9 +87,14 @@ class KeyServer
     {
         return $this->symKey;
     }
-    public function setSimmetric($key)
+    public function getToken()
+    {
+        return $this->token;
+    }
+    public function setSimmetric($key, $token)
     {
         $this->symKey = $key;
+        $this->token = $token;
         if ($this->sourcer) {
             $this->sourcer->storeObject($this);
         }
@@ -102,6 +108,9 @@ class KeyServer
      */
     public function encrypt($data)
     {
+        if (!$this->symKey) {
+            return $data;
+        }
         $message = Util::encrypt($data, $this->symKey);
         return $message;
     }
@@ -112,7 +121,7 @@ class KeyServer
      * @param string $message
      * @return string
      */
-    public function decrypt($message, $private = true)
+    public function decrypt($message, $token)
     {
         // il primo carattere indica la lunghezza del contatore di lunghezza della chiave
         $lenlen = substr($message, 1, $message{0});
@@ -124,7 +133,11 @@ class KeyServer
             $sym_key_cry = base64_decode(substr($message, strlen($lenlen) + 1, $len));
             // chiave simmetrica decrittata con la chiave privata
             \openssl_private_decrypt($sym_key_cry, $sym_key, openssl_pkey_get_private($this->getPrivate(), 'phrase'));
-            $this->setSimmetric($sym_key);
+            $this->setSimmetric($sym_key, $token);
+        }
+        if ($this->token != $token) {
+            var_dump($this);exit;
+            throw new ChannelException("Token mismatch : {$this->token} - {$token} - {$this->symKey}");
         }
         //messaggio crittato
         $ciphertext = substr($message, $len + strlen($lenlen) + 1);

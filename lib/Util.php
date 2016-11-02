@@ -46,6 +46,7 @@ class Util
         if (!$fp) {
             return;
         }
+        chmod(self::$logFile, 0666);
         $root = realpath(__DIR__.'/..');
         $debug = debug_backtrace();
         $file = substr($debug[0]['file'], strlen($root));

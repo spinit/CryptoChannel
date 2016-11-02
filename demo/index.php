@@ -17,7 +17,8 @@ $channelServer = new ChannelServer();
 if (isset($_GET['echo'])) {
     $content = file_get_contents("php://input");
     
-    Util::log('echo '.@$_GET['echo'], $content);
+    //Util::setLogFile('/tmp/cryptochannel.log');
+    Util::log('echo '.@$_GET['echo'], substr($content,0,10));
     Util::log('sym key', $channelServer->getKey()->getSimmetric());
     
     $data = $channelServer->unpack($content);

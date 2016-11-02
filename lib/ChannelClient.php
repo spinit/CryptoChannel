@@ -54,6 +54,12 @@ class ChannelClient
         $this->returnDataCrypted = $enable;
     }
     
+    /**
+     * Richiede i dati al server inizializzando, se serve, la comunicazione 
+     * @param string $url
+     * @param array $data
+     * @return type
+     */
     public function getContent($url, $data)
     {
         if (!$this->key->getPublic()) {
@@ -75,60 +81,38 @@ class ChannelClient
     {
         
         $cookies = $this->cookie->loadObject();
-        $channelOption = new ChannelOption($option, $cookies);
+        $channelOption = new ChannelOption($option, $cookies, $this->getKey());
         $channelOption->setCallType($this->callType);
-        
-        switch($channelOption->getType()) {
-            case 'json' : 
-                if (is_array($data)) {
-                    $data = \json_encode($data);
-                }
-                break;
-            case 'html':
-            case 'xml':
-            case 'plain':
-                if (is_array($data)) {
-                    $data = http_build_query($data);
-                }
-                break;
-        }
-        
-        if ($channelOption->isCrypting()) {
-            Util::log('send to Server', $data);
-            $data = $this->getKey()->encrypt($data);
-            Util::log('crypted', $data);
-        }
         
         $opts = array(
           'http'=>array(
             'method'    => $channelOption->getMethod($option),
             'header'    => $channelOption->getHeader($option),
-            'content'   => $data
+                           // preparazione dati da inviare
+            'content'   => $channelOption->sendData($data)
           )
         );
         
         $context = stream_context_create($opts);
-        // Open the file using the HTTP headers set above
+        // invio dati
         $content = file_get_contents($url, false, $context);
-        
-        foreach($http_response_header as $s) {
-            if(preg_match('|^Set-Cookie:\s*([^=]+)=([^;]+);(.+)$|', $s, $parts)) {
-                $cookies[$parts[1]] = $parts[2];
+        $this->debug = substr($content,0,5);
+        // analisi della risposta
+        $response = $channelOption->parseResponse($http_response_header, $content);
+        if ($channelOption->getStatus() == 'ERROR') {
+            if (!isset($option['stop-reload'])) {
+                // rilettura della chiave pubblica
+                $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false));
+                $this->key->setPublic($pKey);
+                $option['stop-reload'] = 1;
+                return $this->send($url, $data, $option);
             }
-            if(preg_match('|^Cryption-Type:\s*(.+)$|', $s, $parts)) {
-                $cryption = strtolower($parts[1]);
-            }
+            return false;
         }
+        // memorizzazione nuovo stato
+        $this->cookie->storeObject($channelOption->getCookie());
         
-        //$content.="\n".json_encode($cookies);
-        Util::log('Cryption Type : ' . $cryption);
-        $this->cookie->storeObject($cookies);
-        if ($cryption == 'cryptochannel') {
-            Util::log('Content from Server', $content);
-            $content = $this->getKey()->decrypt($content);
-            Util::log('decrypted', $content);
-        }
-        
-        return $content;
+        // ritorno dati 
+        return $response.'-'.$this->debug;
     }
 }
