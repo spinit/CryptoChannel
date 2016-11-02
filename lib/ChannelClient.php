@@ -113,6 +113,6 @@ class ChannelClient
         $this->cookie->storeObject($channelOption->getCookie());
         
         // ritorno dati 
-        return $response.'-'.$this->debug;
+        return $response;
     }
 }
