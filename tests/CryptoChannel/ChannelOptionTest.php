@@ -37,7 +37,7 @@ class ChanneOptionlTest extends \PHPUnit_Framework_TestCase
     }
     public function testHeader()
     {
-        $this->object = new ChannelOption('','');
+        $this->object = new ChannelOption('','', $this);
         $this->assertContains('Cryption-Type: CryptoChannel', $this->object->getHeader());
         $this->object = new ChannelOption(array('crypting'=>false), array('un'=>'test'));
         $this->assertContains('Cookie: un=test;', $this->object->getHeader());
@@ -49,5 +49,9 @@ class ChanneOptionlTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('Uno due tre', $this->object->getHeader());
         $this->object = new ChannelOption(array('headers'=>array('Uno due tre', 'quattro cinque e sei')));
         $this->assertContains('quattro cinque e sei', $this->object->getHeader());
+    }
+    
+    public function getToken() {
+        return 'test';
     }
 }

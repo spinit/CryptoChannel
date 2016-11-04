@@ -106,7 +106,7 @@ class ChannelOption
     private function getHeaderCryptionType()
     {
         $header = '';
-        if ($this->option['crypting']) {
+        if ($this->option['crypting'] and $this->key) {
             $header .= "Cryption-Type: CryptoChannel\r\n";
             $header .= "CryptoChannel-Token: {$this->key->getToken()}\r\n";
         }
