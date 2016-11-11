@@ -93,7 +93,7 @@ class KeyClient
         $this->cryKey = base64_encode($cry_sym_bin);
         
         // token di verifica invio chiave
-        $this->token = $this->makeRandomString(4);
+        $this->token = \rand(1000,9999);
         
         // salvataggio stato
         if ($this->sourcer) {
