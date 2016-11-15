@@ -6,7 +6,7 @@ use CryptoChannel\ChannelServer;
 
 // per codificare la comunicazione in uscita
 use CryptoChannel\ChannelClient;
-
+use CryptoChannel\ChannelException;
 use CryptoChannel\Util;
 
 $channelServer = new ChannelServer();
@@ -21,21 +21,30 @@ if (isset($_GET['echo'])) {
     Util::log('echo '.@$_GET['echo'], substr($content,0,10));
     Util::log('sym key', $channelServer->getKey()->getSimmetric());
     
-    $data = $channelServer->unpack($content);
-    $message = "Ricevuto [{$data}]";
-    if ($_GET['echo']>0) {
-        list($base, ) = explode('?', $_SERVER['REQUEST_URI']);
-        $base = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}{$base}";
+    try {
         
-        // chiamata ad altro server con altro insieme di chiavi
-        $channelClient = new ChannelClient();
-        $channelClient->setPublicUrl("{$base}?pubkey");
-        $channelClient->setCallType('Client-'.$_GET['echo']);
-        $channelClient->enableCryption(1);
-        $message = $channelClient->getContent($base.'?echo='.($_GET['echo']-1), $message);
-        //$message .= '-'.$channelClient->getKey()->getSimmetric();
+        $data = $channelServer->unpack($content);
+        $message = "Ricevuto [{$data}]";
+        
+        if ($_GET['echo']>0) {
+            list($base, ) = explode('?', $_SERVER['REQUEST_URI']);
+            $base = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}{$base}";
+
+            // chiamata ad altro server con altro insieme di chiavi
+            $channelClient = new ChannelClient();
+            $channelClient->setPublicUrl("{$base}?pubkey");
+            $channelClient->setCallType('Client-'.$_GET['echo']);
+            $channelClient->enableCryption(1);
+            $message = $channelClient->getContent($base.'?echo='.($_GET['echo']-1), $message);
+            header('CryptoChannel-Debug: '.$channelClient->debug.' '.@$_SERVER['HTTP_CRYPTOCHANNEL_DEBUG']);
+            //$message .= '-'.$channelClient->getKey()->getSimmetric();
+        }
+        
+        die($channelServer->pack($message));
+        
+    } catch (\Exception $ex) {
+        die($ex->getMessage());
     }
-    die($channelServer->pack($message));
 }
 
 // librerie javascript necessarie al browser

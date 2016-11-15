@@ -14,7 +14,7 @@
     var token = '';
     var serverToken = '';
 
-    function doAjax(url, data, callback)
+    function doAjax(url, data, callback, recalled)
     {
 
         function encrypt_message(plaintext)
@@ -37,7 +37,7 @@
     
             // crittazione simmetrica
             var encryptedMessage = Aes.Ctr.encrypt(plaintext, key_message, 256);
-            console.log([plaintext, prefix]);
+            console.log('encrypt',[plaintext, prefix]);
             // and concatenate our payload message
             var encrypted = prefix + encryptedMessage;
 
@@ -57,12 +57,33 @@
         var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                console.log(xmlhttp.getResponseHeader('Cryption-Type'));
                 if (xmlhttp.getResponseHeader('Cryption-Type') == 'CryptoChannel') {
-                    console.log('ricevuto', serverToken, xmlhttp.getResponseHeader('CryptoChannel-Status'));
                     serverToken = xmlhttp.getResponseHeader('CryptoChannel-Token');
+                    console.log('ricevuto', serverToken, token, recalled, xmlhttp.getResponseHeader('CryptoChannel-Status'));
+                    console.log(xmlhttp.responseText);
+                    if (serverToken != token) {
+                        if (!recalled) {
+                            doAjax(url, data, callback, 1);
+                        } else {
+                            // TODO: Gestire l'errore
+                        }
+                        return;
+
+                    }
                     callback(decrypt_message(xmlhttp.responseText));
-                    // TODO: se il token è diverso ... occorre rieffettuare la chiamata
                 } else {
+                    if (xmlhttp.getResponseHeader('CryptoChannel-Status') == 'ERROR') {
+                        if (!recalled) {
+                            pubKey = xmlhttp.responseText;
+                            key_message = '';
+                            console.log('new symkey');
+                            doAjax(url, data, callback, 1);
+                        } else {
+                            // TODO: Gestire l'errore
+                        }
+                        return;
+                    }
                     callback(xmlhttp.responseText);
                 }
             }

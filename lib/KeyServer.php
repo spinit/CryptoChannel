@@ -38,16 +38,44 @@ class KeyServer
      */
     public static function getKey(RestoreInterface $sourcer = null)
     {
-        if (!$sourcer) {
-            return new self();
+        $instance = false;
+        // primo tentativo ... caricamento dal sorgente indicato
+        if ($sourcer) {
+            $instance = $sourcer->loadObject();
         }
-        $instance = $sourcer->loadObject();
+        // secondo tentavito ... caricamento dal sorgente di default
         if (!$instance) {
+            $instance = self::getDefaultKey();
+        }
+        if (!$instance) {
+            // terzo tentativo generazione nuova chiave
             $instance = new self($sourcer);
         } else {
+            // oppure impostazione della sorgente indicata
             $instance->setSourcer($sourcer);
         }
         return $instance;
+    }
+    
+    private static function getDefaultKey($countDown = 10)
+    {
+        $keyFile = __DIR__.'/../.htServerKey';
+        $strKey = trim(@file_get_contents($keyFile));
+        if ($strKey != '') {
+            if ($strKey == 'WAIT' and $countDown>0) {
+                sleep(1);
+                return self::getDefaultKey($countDown -1);
+            }
+            if ($strKey != 'WAIT' and (filemtime($keyFile) + 3 > time()) ) {
+                // se la chiave ha menu di un'ora ... viene presa
+                // altrimenti ne viene generata una nuova
+                return unserialize($strKey);
+            }
+        }
+        @file_put_contents($keyFile, "WAIT");
+        $key = new self();
+        @file_put_contents($keyFile, serialize($key));
+        return $key;
     }
     
     protected function __construct(RestoreInterface $sourcer = null)
@@ -136,7 +164,6 @@ class KeyServer
             $this->setSimmetric($sym_key, $token);
         }
         if ($this->token != $token) {
-            var_dump($this);exit;
             throw new ChannelException("Token mismatch : {$this->token} - {$token} - {$this->symKey}");
         }
         //messaggio crittato

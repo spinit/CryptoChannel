@@ -13,6 +13,7 @@ class ChannelClient
     
     private $keyPublicUrl = '';
     
+    public $debug;
     /**
      * Restituisce l'inseme delle chiavi usate per la comunicazione
      * @return CryptoChannel\KeyData
@@ -96,7 +97,8 @@ class ChannelClient
         $context = stream_context_create($opts);
         // invio dati
         $content = file_get_contents($url, false, $context);
-        $this->debug = substr($content,0,5);
+        // var_dump($opts, $content);exit;
+        $this->debug .= substr($content,0,5). ' '. @$_SERVER['HTTP_CRYPTOCHANNEL_DEBUG'];
         // analisi della risposta
         $response = $channelOption->parseResponse($http_response_header, $content);
         if ($channelOption->getStatus() == 'ERROR') {

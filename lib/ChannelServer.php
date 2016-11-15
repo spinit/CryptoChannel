@@ -81,7 +81,7 @@ class ChannelServer
             } catch (ChannelException $e) {
                 header('CryptoChannel-Status: ERROR');
                 header('CryptoChannel-Message: '.$e->getMessage());
-                return false;
+                throw new \Exception($this->getKey()->getPublic());
             }
         }
         return $message;
