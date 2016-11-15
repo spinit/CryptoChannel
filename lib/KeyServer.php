@@ -66,7 +66,7 @@ class KeyServer
                 sleep(1);
                 return self::getDefaultKey($countDown -1);
             }
-            if ($strKey != 'WAIT' and (filemtime($keyFile) + 3 > time()) ) {
+            if ($strKey != 'WAIT' and (filemtime($keyFile) + 3600 > time()) ) {
                 // se la chiave ha menu di un'ora ... viene presa
                 // altrimenti ne viene generata una nuova
                 return unserialize($strKey);
