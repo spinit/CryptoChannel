@@ -75,6 +75,7 @@
                 } else {
                     if (xmlhttp.getResponseHeader('CryptoChannel-Status') == 'ERROR') {
                         if (!recalled) {
+                            // reimpostazione chiave pubblica
                             pubkey = xmlhttp.responseText;
                             key_message = '';
                             console.log('new symkey');
