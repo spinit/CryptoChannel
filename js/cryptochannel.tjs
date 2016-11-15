@@ -75,7 +75,7 @@
                 } else {
                     if (xmlhttp.getResponseHeader('CryptoChannel-Status') == 'ERROR') {
                         if (!recalled) {
-                            pubKey = xmlhttp.responseText;
+                            pubkey = xmlhttp.responseText;
                             key_message = '';
                             console.log('new symkey');
                             doAjax(url, data, callback, 1);

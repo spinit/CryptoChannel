@@ -121,6 +121,7 @@ class KeyServer
     }
     public function setSimmetric($key, $token)
     {
+        //var_dump($key, $token);
         $this->symKey = $key;
         $this->token = $token;
         if ($this->sourcer) {
@@ -161,9 +162,13 @@ class KeyServer
             $sym_key_cry = base64_decode(substr($message, strlen($lenlen) + 1, $len));
             // chiave simmetrica decrittata con la chiave privata
             \openssl_private_decrypt($sym_key_cry, $sym_key, openssl_pkey_get_private($this->getPrivate(), 'phrase'));
+            if (!$sym_key) {
+                //var_dump(substr($message, strlen($lenlen) + 1, $len), $this->getPublic(), $this->getPrivate());exit;
+                //var_dump($sym_key, $this->getPublic(), $message);exit;
+            }
             $this->setSimmetric($sym_key, $token);
         }
-        if ($this->token != $token) {
+        if ($this->token != $token or !$this->getSimmetric()) {
             throw new ChannelException("Token mismatch : {$this->token} - {$token} - {$this->symKey}");
         }
         //messaggio crittato
