@@ -54,7 +54,7 @@ class Util
         $content = "== ".date("H:i:s")." == ".getmypid()." == {$file}:{$line} >> $title";
         if ($msg) {
             if (!is_string($msg)) {
-                $msg = json_encode($msg);
+                $msg = print_r($msg, 1);
             }
             $content .= "\n".$msg;
         }

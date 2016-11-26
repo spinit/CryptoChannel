@@ -174,7 +174,7 @@ class ChannelOption
                 $this->key->setServerToken(strtolower($parts[1]));
             }
             if(preg_match('|^CryptoChannel-Status:\s*(.+)$|', $s, $parts)) {
-                $this->status = (strtolower($parts[1]));
+                $this->status = (strtoupper($parts[1]));
             }
         }
         //$content.="\n".json_encode($cookies);
