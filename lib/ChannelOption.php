@@ -159,7 +159,7 @@ class ChannelOption
         return $data;
     }
     
-    public function parseResponse($headers, $data)
+    public function parseResponse($headers, $data, $func = false)
     {
         $cryption = '';
         foreach($headers as $s) {
@@ -175,6 +175,9 @@ class ChannelOption
             }
             if(preg_match('|^CryptoChannel-Status:\s*(.+)$|', $s, $parts)) {
                 $this->status = (strtoupper($parts[1]));
+            }
+            if ($func) {
+                call_user_func_array($func, array($s));
             }
         }
         //$content.="\n".json_encode($cookies);

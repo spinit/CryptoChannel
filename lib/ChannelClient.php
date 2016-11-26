@@ -74,6 +74,12 @@ class ChannelClient
     {
         $this->callType = $type;
     }
+    public function parseResponseHeader($header)
+    {
+        if (preg_match('/^Content-Type:/i', $header)) {
+            header($header);
+        }
+    }
     /**
      * Invia i dati ad un servizio esterno
      * @param type $data
@@ -100,7 +106,7 @@ class ChannelClient
         // var_dump($opts, $content);exit;
         $this->debug .= substr($content,0,5). ' '. @$_SERVER['HTTP_CRYPTOCHANNEL_DEBUG'];
         // analisi della risposta
-        $response = $channelOption->parseResponse($http_response_header, $content);
+        $response = $channelOption->parseResponse($http_response_header, $content, array($this, 'parseResponseHeader'));
         if (strtoupper($channelOption->getStatus()) == 'ERROR') {
             if (!isset($option['stop-reload'])) {
                 // rilettura della chiave pubblica

@@ -153,7 +153,7 @@ class KeyServer
     public function decrypt($message, $token)
     {
         // il primo carattere indica la lunghezza del contatore di lunghezza della chiave
-        $lenlen = substr($message, 1, $message{0});
+        $lenlen = substr($message, 1, $message{0} + 0);
         $len = 0;
         if (strlen($lenlen)) {
             // è stata fornita la chiave ... quindi occorre decrittarla
