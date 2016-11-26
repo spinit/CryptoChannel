@@ -61,13 +61,13 @@ class ChannelClient
      * @param array $data
      * @return type
      */
-    public function getContent($url, $data)
+    public function getContent($url, $data, $cookie = false)
     {
         if (!$this->key->getPublic()) {
-            $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false));
+            $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false, 'cookie'=>$cookie));
             $this->key->setPublic($pKey);
         }
-        $content = $this->send($url, $data, array('crypting'=>$this->returnDataCrypted));
+        $content = $this->send($url, $data, array('crypting'=>$this->returnDataCrypted, 'cookie'=>$cookie));
         return $content;
     }
     public function setCallType($type)
@@ -101,11 +101,11 @@ class ChannelClient
         $this->debug .= substr($content,0,5). ' '. @$_SERVER['HTTP_CRYPTOCHANNEL_DEBUG'];
         // analisi della risposta
         $response = $channelOption->parseResponse($http_response_header, $content);
-        if ($channelOption->getStatus() == 'ERROR') {
+        if (strtoupper($channelOption->getStatus()) == 'ERROR') {
             if (!isset($option['stop-reload'])) {
                 // rilettura della chiave pubblica
-                $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false));
-                $this->key->setPublic($pKey);
+                // $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false));
+                $this->key->setPublic($content);
                 $option['stop-reload'] = 1;
                 return $this->send($url, $data, $option);
             }

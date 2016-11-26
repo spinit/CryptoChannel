@@ -36,7 +36,12 @@ class ChannelOption
         $option['method'] = isset($option['method']) ? $option['method']:'POST';
         $option['crypting'] = (!isset($option['crypting']) or $option['crypting']);
         $option['type'] = isset($option['type']) ? $option['type']:'json';
-                        
+        
+        if ($option['cookie']) {
+            foreach($option['cookie'] as $name=>$value) {
+                $cookie[$name] = $value;
+            }
+        }
         $this->option = $option;
         $this->cookie = $cookie;
     }
