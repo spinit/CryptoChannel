@@ -6,7 +6,7 @@ before_script:
     - php -d always_populate_raw_post_data=-1 -S localhost:1349 -t demo &
     - sleep 3
     
-script: phpunit -c build/phpunit.xml --coverage-clover=coverage.xml tests/
+script: phpunit -d noHttpdStart -c build/phpunit.xml --coverage-clover=coverage.xml tests/
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
