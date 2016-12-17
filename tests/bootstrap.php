@@ -9,7 +9,7 @@ $command = sprintf(
     WEB_SERVER_PORT,
     WEB_SERVER_DOCROOT
 );
- 
+/*
 // Execute the command and store the process ID
 $output = array(); 
 exec($command, $output);
@@ -28,3 +28,5 @@ register_shutdown_function(function() use ($pid) {
     echo sprintf('%s - Killing process with ID %d', date('r'), $pid) . PHP_EOL;
     exec('sudo kill ' . $pid);
 });
+ * 
+ */
