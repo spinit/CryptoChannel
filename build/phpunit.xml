@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <phpunit backupGlobals="false" 
-         bootstrap="../autoload.php"
+         bootstrap="../tests/bootstrap.php"
          verbose="true"
          timeoutForSmallTests="10">
     <logging>
@@ -12,5 +12,10 @@
             <directory suffix="Test.php">../tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <const name="WEB_SERVER_HOST" value="localhost" />
+        <const name="WEB_SERVER_PORT" value="1349" />
+        <const name="WEB_SERVER_DOCROOT" value="../demo" />        
+    </php>
 </phpunit>
 

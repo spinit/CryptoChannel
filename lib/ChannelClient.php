@@ -3,7 +3,7 @@ namespace CryptoChannel;
 /**
  * Classe principale attraverso la quale crittare/decrittare i dati
  */
-class ChannelClient
+class ChannelClient extends Base
 {
     private $key = false;
     
@@ -63,10 +63,11 @@ class ChannelClient
      */
     public function getContent($url, $data, $cookie = false)
     {
+        /*
         if (!$this->key->getPublic()) {
             $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false, 'cookie'=>$cookie));
             $this->key->setPublic($pKey);
-        }
+        }*/
         $content = $this->send($url, $data, array('crypting'=>$this->returnDataCrypted, 'cookie'=>$cookie));
         return $content;
     }
@@ -77,7 +78,7 @@ class ChannelClient
     public function parseResponseHeader($header)
     {
         if (preg_match('/^Content-Type:/i', $header)) {
-            header($header);
+            $this->util()->header($header);
         }
     }
     /**

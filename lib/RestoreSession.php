@@ -6,7 +6,7 @@ use CryptoChannel\RestoreInterface;
 /**
  * Classe che permette la memorizzazione e il ripristino di un oggetto
  */
-class RestoreSession implements RestoreInterface
+class RestoreSession extends Base implements RestoreInterface
 {
 
     private $varname;
@@ -14,8 +14,8 @@ class RestoreSession implements RestoreInterface
     
     public function __construct($varname, $varbuf = 'SESSION')
     {
-        if (session_status() != PHP_SESSION_ACTIVE and $varbuf == 'SESSION') {
-            session_start();
+        if ($this->util()->session_status() != PHP_SESSION_ACTIVE and $varbuf == 'SESSION') {
+            $this->util()->session_start();
         }
         if (!is_array($varname)) {
             $varname = array($varname);

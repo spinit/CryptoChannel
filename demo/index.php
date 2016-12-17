@@ -24,7 +24,7 @@ if (isset($_GET['echo'])) {
     try {
         
         $data = $channelServer->unpack($content);
-        $message = "Ricevuto [{$data}]";
+        $message = "Ricevuto [{$data}]{$_SERVER['SERVER_PORT']}";
         
         if ($_GET['echo']>0) {
             list($base, ) = explode('?', $_SERVER['REQUEST_URI']);

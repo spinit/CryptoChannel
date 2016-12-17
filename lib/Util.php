@@ -69,7 +69,10 @@ class Util
     {
         return AesCtr::decrypt($encrypted, $password, 256);
     }
-
+    
+    public function __call($name, $arguments) {
+        return call_user_func_array($name, $arguments);
+    }
 }
 
 return new Util();
