@@ -1,5 +1,6 @@
 <?php
 ob_start();
+ini_set('always_populate_raw_post_data', -1);
 
 $util = include_once __DIR__.'/lib/Util.php';
 

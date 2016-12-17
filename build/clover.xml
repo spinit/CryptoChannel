@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1481973229">
-  <project timestamp="1481973229">
+<coverage generated="1481973981">
+  <project timestamp="1481973981">
     <file name="/home/ermanno/www/CryptoChannel/autoload.php">
-      <line num="10" type="stmt" count="6"/>
       <line num="11" type="stmt" count="6"/>
-      <line num="13" type="stmt" count="5"/>
-      <metrics loc="14" ncloc="14" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="3" coveredelements="3"/>
+      <line num="12" type="stmt" count="6"/>
+      <line num="14" type="stmt" count="5"/>
+      <metrics loc="15" ncloc="15" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="3" coveredelements="3"/>
     </file>
     <package name="CryptoChannel">
       <file name="/home/ermanno/www/CryptoChannel/lib/Aes.php">
@@ -616,6 +616,6 @@
       <line num="30" type="stmt" count="0"/>
       <metrics loc="29" ncloc="23" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="2" coveredelements="0"/>
     </file>
-    <metrics files="10" loc="1150" ncloc="798" classes="8" methods="58" coveredmethods="45" conditionals="0" coveredconditionals="0" statements="500" coveredstatements="462" elements="558" coveredelements="507"/>
+    <metrics files="10" loc="1151" ncloc="799" classes="8" methods="58" coveredmethods="45" conditionals="0" coveredconditionals="0" statements="500" coveredstatements="462" elements="558" coveredelements="507"/>
   </project>
 </coverage>
