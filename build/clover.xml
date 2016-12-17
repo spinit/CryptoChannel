@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1481972558">
-  <project timestamp="1481972558">
+<coverage generated="1481973229">
+  <project timestamp="1481973229">
     <file name="/home/ermanno/www/CryptoChannel/autoload.php">
       <line num="10" type="stmt" count="6"/>
       <line num="11" type="stmt" count="6"/>

@@ -1,5 +1,5 @@
 <?php
-include('../autoload.php');
+include(dirname(__DIR__).'/autoload.php');
 
 // per decodificare la comunicazione in ingresso
 use CryptoChannel\ChannelServer;
