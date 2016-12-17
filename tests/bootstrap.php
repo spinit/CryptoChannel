@@ -1,6 +1,6 @@
 <?php
 
-include('../autoload.php');
+include(dirname(__DIR__).'/autoload.php');
 
 // Command that starts the built-in web server
 $command = sprintf(
