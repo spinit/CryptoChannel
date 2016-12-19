@@ -2,7 +2,7 @@
 default:
     extensions:
         Behat\MinkExtension\Extension:
-            base_url: https://localhost:1349/
+            base_url: http://localhost:1349/
             default_session: zombie
             javascript_session: zombie
             zombie: ~
