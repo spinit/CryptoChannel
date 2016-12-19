@@ -5,5 +5,5 @@ default:
             base_url: https://localhost:1349/
             default_session: zombie
             javascript_session: zombie
-            zombie:
-              node_modules_path: '/usr/local/share/npm/lib/node_modules/'
+#            zombie:
+#              node_modules_path: '/home/ermanno/lib/node_modules/'
