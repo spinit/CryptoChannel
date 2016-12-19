@@ -2,6 +2,9 @@
 Feature: Test di prova
 
     Scenario: Prova del test
-        Given imposto "message" con "test"
-        When clicco su "invia"
-        Then casella "response" ha valore "Ricevuto [test]"
+        Given I am on "/"
+        When pint last response
+        And I press "invia"
+        Then print current URL
+        And show last response
+        And the "response" element should contain "Ricevuto [test]"
