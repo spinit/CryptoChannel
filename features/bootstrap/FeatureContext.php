@@ -8,6 +8,7 @@ class FeatureContext extends Behat\MinkExtension\Context\MinkContext
     public function impostoCon($arg1, $arg2)
     {
         $element = $this->getSession()->getPage()->findById($arg1);
+        var_dump($arg1, $arg2, $element);
         $element->setValue($arg2);
     }
 
