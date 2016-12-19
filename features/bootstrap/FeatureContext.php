@@ -9,6 +9,7 @@ class FeatureContext extends Behat\MinkExtension\Context\MinkContext
     {
         $element = $this->getSession()->getPage()->findById($arg1);
         var_dump($arg1, $arg2, $element);
+        echo $this->getSession()->getPage()->getHtml();
         $element->setValue($arg2);
     }
 
@@ -21,7 +22,9 @@ class FeatureContext extends Behat\MinkExtension\Context\MinkContext
         $element->click();
         $this->getSession()->wait(5000,
             "$('.suggestions-results').children().length > 0"
-    );  }
+        );  
+        
+    }
 
     /**
      * @Then /^casella "([^"]*)" ha valore "([^"]*)"$/
