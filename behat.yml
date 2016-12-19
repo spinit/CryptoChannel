@@ -3,7 +3,7 @@ default:
     context:
         parameters:
             # URL to use against the web server in the features
-            url: http://localhost:8888
+            url: http://localhost:1349/
 
             # Path to the document root
             documentRoot: demo
@@ -13,7 +13,7 @@ default:
             
     extensions:
         Behat\MinkExtension\Extension:
-            base_url: http://localhost:8888/
+            base_url: http://localhost:1349/
             default_session: zombie
             javascript_session: zombie
             zombie: ~
