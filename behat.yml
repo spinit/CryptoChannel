@@ -1,6 +1,7 @@
 
 default:
     context:
+        class: FeaturesContext
         parameters:
             # URL to use against the web server in the features
             url: http://localhost:1349/
@@ -13,7 +14,7 @@ default:
             
     extensions:
         Behat\MinkExtension\Extension:
-            base_url: http://localhost:1349/
+            base_url: http://localhost:8000/
             default_session: zombie
             javascript_session: zombie
             zombie: ~
