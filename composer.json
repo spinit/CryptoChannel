@@ -18,7 +18,7 @@
         "behat/behat": "2.5.*@stable",
         "behat/mink": "1.5@stable",
         "behat/mink-extension": "*",
-        "behat/mink-zombie-driver": "*"
+        "behat/mink-zombie-driver": "*@dev"
  
     },
     "minimum-stability": "dev",
