@@ -14,6 +14,8 @@ if (!getenv('DEBIAN_FRONTEND')) {
     // Execute the command and store the process ID
     $output = array(); 
     exec($command, $output);
+    echo $command;
+    
     $pid = (int) $output[0];
     sleep(3);
     echo sprintf(

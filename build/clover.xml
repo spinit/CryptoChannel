@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1481976067">
-  <project timestamp="1481976067">
+<coverage generated="1482160741">
+  <project timestamp="1482160741">
     <file name="/home/ermanno/www/CryptoChannel/autoload.php">
       <line num="11" type="stmt" count="6"/>
       <line num="12" type="stmt" count="6"/>
@@ -611,11 +611,11 @@
       </file>
     </package>
     <file name="/home/ermanno/www/CryptoChannel/tests/bootstrap.php">
-      <line num="28" type="stmt" count="0"/>
-      <line num="29" type="stmt" count="0"/>
-      <line num="30" type="stmt" count="0"/>
-      <metrics loc="29" ncloc="23" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="2" coveredelements="0"/>
+      <line num="31" type="stmt" count="0"/>
+      <line num="32" type="stmt" count="0"/>
+      <line num="33" type="stmt" count="0"/>
+      <metrics loc="33" ncloc="25" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="0" elements="3" coveredelements="0"/>
     </file>
-    <metrics files="10" loc="1151" ncloc="799" classes="8" methods="58" coveredmethods="45" conditionals="0" coveredconditionals="0" statements="500" coveredstatements="462" elements="558" coveredelements="507"/>
+    <metrics files="10" loc="1155" ncloc="801" classes="8" methods="58" coveredmethods="45" conditionals="0" coveredconditionals="0" statements="501" coveredstatements="462" elements="559" coveredelements="507"/>
   </project>
 </coverage>
