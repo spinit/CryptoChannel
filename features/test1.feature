@@ -6,4 +6,4 @@ Feature: Test di prova
         When print last response
         And I fill in "message" with "test"
         And I press "Invia"
-        Then the "response" element should contain "Ricevuto [test]"
+        Then I should see "Ricevuto [test]" in the "#response" element
