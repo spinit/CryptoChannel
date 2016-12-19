@@ -8,7 +8,7 @@ before_script:
     
 script: 
     - phpunit -c build/phpunit.xml --coverage-clover=coverage.xml tests/
-    - vendor/bin/behat
+    - ./bin/behat
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
