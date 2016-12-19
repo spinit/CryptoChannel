@@ -3,9 +3,17 @@ language: php
 php : '5.6'
 
 before_script:
+    - sudo apt-get install python-software-properties
+    - sudo add-apt-repository ppa:chris-lea/node.js
+    - sudo apt-get update
+    - sudo apt-get install nodejs nodejs-dev npm
+    - export NODE_PATH="/usr/lib/node_modules"
+    - composer install
     - php -d always_populate_raw_post_data=-1 -S localhost:1349 -t demo >/dev/null 2>&1 &
     
-script: phpunit -c build/phpunit.xml --coverage-clover=coverage.xml tests/
+script: 
+    - phpunit -c build/phpunit.xml --coverage-clover=coverage.xml tests/
+    - vendor/bin/behat
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
