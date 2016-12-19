@@ -4,7 +4,7 @@ default:
         class: FeatureContext
         parameters:
             # URL to use against the web server in the features
-            url: http://localhost:1349/
+            url: http://localhost:8000/
 
             # Path to the document root
             documentRoot: demo
