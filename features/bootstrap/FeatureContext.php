@@ -7,7 +7,8 @@ class FeatureContext extends Behat\MinkExtension\Context\MinkContext
      */
     public function impostoCon($arg1, $arg2)
     {
-        print_r(get_class_methods($this->getSession()->getDriver()));
+        $element = $this->getSession()->getPage()->findById($arg1);
+        $element->setValue($arg2);
     }
 
     /**
@@ -15,15 +16,21 @@ class FeatureContext extends Behat\MinkExtension\Context\MinkContext
      */
     public function cliccoSu($arg1)
     {
-        throw new PendingException();
-    }
+        $element = $this->getSession()->getPage()->findButton($arg1);
+        $element->click();
+        $this->getSession()->wait(5000,
+            "$('.suggestions-results').children().length > 0"
+    );  }
 
     /**
      * @Then /^casella "([^"]*)" ha valore "([^"]*)"$/
      */
     public function casellaHaValore($arg1, $arg2)
     {
-        throw new PendingException();
+        $element = $this->getSession()->getPage()->findById($arg1);
+        if ($element->getText()!=$arg2) {
+            throw new \Exception();
+        }
     }
 
 }
