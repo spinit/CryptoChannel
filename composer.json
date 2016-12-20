@@ -4,21 +4,19 @@
     "description": "implementazione php di un canale di comuncazione crittata attraverso la metodologia chiave simmetrica/asimmetrica",
     "license": "LGPL v3.0",
     "authors": [
-            {
-                    "name": "Ermanno Astolfi",
-                    "email": "ermanno.astolfi@spinit.it",
-                    "role": "Developer"
-            }
+        {
+                "name": "Ermanno Astolfi",
+                "email": "ermanno.astolfi@spinit.it",
+                "role": "Developer"
+        }
     ],
-    "xxrequire": {
-            "php": ">=5.3.0",
-            "phpseclib/phpseclib": "dev-master"
-    },
     "require": {
         "behat/behat": "2.5.*@stable",
         "behat/mink": "1.5@stable",
         "behat/mink-extension": "*",
-        "behat/mink-zombie-driver": "*@dev"
+        "behat/mink-goutte-driver": "*",
+        "behat/mink-selenium2-driver": "*",
+        "behat/mink-zombie-driver": "*"
  
     },
     "minimum-stability": "dev",

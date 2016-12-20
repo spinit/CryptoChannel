@@ -2,14 +2,17 @@ language: php
 
 php : '5.6'
 
-before_script:
+xxbefore_script:
     - npm install --silent -g zombie@1.4.1 > /dev/null
     - export NODE_PATH=`find /home/travis/.nvm -maxdepth 3 -name node_modules -type d`
+    
+before_script:
     - composer install
     - php -d always_populate_raw_post_data=-1 -S 127.0.0.1:8000 -t demo >/dev/null 2>&1 &
+    - phantomjs --webdriver=8001 >/dev/null 2>&1 &
     
 script: 
-    - ./bin/behat
+    - ./bin/behat -p phantomjs
     - phpunit -c build/phpunit.xml tests/
 
 after_success:

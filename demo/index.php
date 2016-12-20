@@ -76,16 +76,18 @@ if (isset($_GET['pubkey'])) {
         }
     </script>
     <body>
-        <div style="width:400px;">
-            <textarea id="message" style="width:100%" rows="5"></textarea>
-            <br/>
-            <span>Trasmissione cifrata</span>
-            <input type="checkbox" value="1" id="cryptionFlag"/>
-            <span>&nbsp;&nbsp;Salti</span>
-            <input type="text" size="3" value="0" id="echoNum"/>
-            <button type="button" onclick="talk()" style="float:right">Invia</button>
-            <br/>
-            <pre id="response"></pre>
-        </div>
+        <form>
+            <div style="width:400px;">
+                <textarea id="message" class="messaggio" style="width:100%" rows="5"></textarea>
+                <br/>
+                <span>Trasmissione cifrata</span>
+                <input type="checkbox" value="1" id="cryptionFlag"/>
+                <span>&nbsp;&nbsp;Salti</span>
+                <input type="text" size="3" value="0" id="echoNum"/>
+                <button type="button" onclick="talk()" style="float:right">Invia</button>
+                <br/>
+                <pre id="response"></pre>
+            </div>
+        </form>
    </body>
 </html>
