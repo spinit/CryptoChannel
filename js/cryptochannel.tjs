@@ -14,6 +14,21 @@
     var token = '';
     var serverToken = '';
 
+    var list_ajax = [];
+    function addAjax (a) {
+        list_ajax.push(a);
+    }
+    function removeAjax (a) {
+        if (list_ajax.indexOf(a)<0) {
+            return false;
+        }
+        list_ajax.splice(list_ajax.indexOf(a),1);
+        return true;
+    }
+    this.isAjaxActive = function() {
+        return list_ajax.length;
+    }
+
     function doAjax(url, data, callback, recalled)
     {
 
@@ -57,6 +72,7 @@
         var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                removeAjax(xmlhttp);
                 console.log(xmlhttp.getResponseHeader('Cryption-Type'));
                 if (xmlhttp.getResponseHeader('Cryption-Type') == 'CryptoChannel') {
                     serverToken = xmlhttp.getResponseHeader('CryptoChannel-Token');
@@ -91,6 +107,7 @@
         }
 
         xmlhttp.open("POST", url, true);
+        addAjax(xmlhttp);
     
         switch(type) {
             case 'json':
