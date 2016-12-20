@@ -30,7 +30,7 @@ class ChanneClientTest extends \PHPUnit_Framework_TestCase
     {
         $data = 'ok';
         $actual = $this->object->getContent($this->urlbase.'/index.php?echo=0', $data);
-        $expected = sprintf('Ricevuto [%s]%s', $data, WEB_SERVER_PORT);
+        $expected = sprintf('Ricevuto [%s]', $data);
         $this->assertEquals($actual, $expected);
     }
     
@@ -39,7 +39,7 @@ class ChanneClientTest extends \PHPUnit_Framework_TestCase
         $this->object->enableCryption();
         $data = 'ok';
         $actual = $this->object->getContent($this->urlbase.'/index.php?echo=0', $data);
-        $expected = sprintf('Ricevuto [%s]%s', $data, WEB_SERVER_PORT);
+        $expected = sprintf('Ricevuto [%s]', $data);
         $this->assertEquals($actual, $expected);
     }
 }
