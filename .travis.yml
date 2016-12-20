@@ -4,12 +4,14 @@ php : '5.6'
 
 before_script:
     - composer install
-    - php -d always_populate_raw_post_data=-1 -S 127.0.0.1:8000 -t demo >/dev/null 2>&1 &
-    - phantomjs --webdriver=8001 >/dev/null 2>&1 &
+    - php -d always_populate_raw_post_data=-1 -S 127.0.0.1:8000 -t demo > httpd.log 2>&1 &
+    - phantomjs --webdriver=8001 > phantomjs.log 2>&1 &
     
 script: 
     - ./bin/behat -p phantomjs
     - phpunit -c build/phpunit.xml tests/
+    - cat httpd.log
+    - cat phantomjs.log
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
