@@ -16,7 +16,7 @@ phantomjs:
     extensions:
         Behat\MinkExtension\Extension:
             base_url: 'http://127.0.0.1:8000'
-            goutte: ~
+            # goutte: ~
             selenium2:
                 wd_host: "http://127.0.0.1:8001/wd/hub"
                 
