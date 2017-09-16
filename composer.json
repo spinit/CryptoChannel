@@ -1,5 +1,5 @@
 {
-    "name": "spinit/CryptoChannel",
+    "name": "spinit/crypto-channel",
     "type": "library",
     "description": "implementazione php di un canale di comuncazione crittata attraverso la metodologia chiave simmetrica/asimmetrica",
     "license": "LGPL v3.0",
