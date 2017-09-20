@@ -4,13 +4,24 @@
     var pubkey = "{{pubKey}}";
 
     function randomString(length) {
-        return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+        var str = '';
+        var maxLen = 5;
+        do {
+            var resLen = length - maxLen;
+            var len = maxLen;
+            if (resLen < maxLen) {
+                len = length;
+            } 
+            str += Math.round((Math.pow(36, len +1) - Math.random() * Math.pow(36, len))).toString(36).slice(1);
+            length = resLen;
+        } while (length >= maxLen)
+        return str;
     }
 
     var key_message = false; 
     var key_crypted = false;
     var cryptionEnable = true;
-    var type = 'json';
+    var type = 'html';
     var token = '';
     var serverToken = '';
 
@@ -28,113 +39,247 @@
     this.isAjaxActive = function() {
         return list_ajax.length;
     }
+    function beforeSend(xhr, settings)
+    {
+        switch(type) {
+            case 'json':
+                xhr.setRequestHeader('Content-type','application/json');
+                break;
+            case 'html':
+                xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+                break;
+            case 'plain':
+            case 'text':
+                xhr.setRequestHeader('Content-type','text/'+type);
+                break;
+        }
+        if (cryptionEnable) {
+            xhr.setRequestHeader("Cryption-Type", "CryptoChannel");
+            // trasmissione del token al server
+            xhr.setRequestHeader("CryptoChannel-Token", token);
+        }
+    }
+    /**
+     * Inizializzazione chiave simmetrica
+     * @returns {undefined}
+     */
+    function initSimmetricKey()
+    {
+        // chiave simmetrica in chiaro rimane visibile solo al client per le 
+        // operazioni di decodifica
+        key_message = randomString(150);
+        // chiave pubblica da utilizzare per le comunicazioni client->server
+        var encrypter = new JSEncrypt();
+        encrypter.setPublicKey(pubkey);
+        // chiave simmetrica crittata da trasmettere (quando serve ... sicuramente la prima volta)
+        // al server insieme al messaggio (crittato però con la simmetrica)
+        key_crypted = encrypter.encrypt(key_message);
+        // token di controllo per verificare (lato client) se il server ha la chiave
+        // simmetrica giusta in memoria
+        token = randomString(4);
+        serverToken = '';
+    }
+    
+    /**
+     * Funzione interna di crittazione del messaggio.
+     * Prefix è il digit che indica quanta parte del messaggio è didicato alla trasmissione
+     * della chiave simmetrica crittata.
+     * Se è a '0' significa che (per il server) il testo arrivato è tutto messaggio da 
+     * decrittare con la chiave simmetrica in memoria. Altrimenti il testo arrivato
+     * contiene nella prima parte la nuova chiave da usare per il restante blocco dati
+     * @param {type} plaintext
+     * @returns {String|Boolean|hexlen.length}
+     */
+    function encrypt_message(plaintext)
+    {
+        plaintext = plaintext || '';
+        var prefix = '0';
+        // quando la chiave viene generata ... viene messa nel messaggio
+        if (token != serverToken) {
+            // viene rimandata la chiave
+            var hexlen = Number(key_crypted.length).toString(16);
+            // occorre trasmettere la chiave crittata
+            // quindi si premette alla chiave la lunghezza della chiave in esadecimale
+            // al tutto si premette il numero di caratteri della lunghezza della chiave
+            // In questo modo se il messaggio inizia con '0' significa che nel testo
+            // non è presente la chiave ... se inizia con 1 || 2 ... || 9(??) significa
+            // che i successivi 1 (2, ... 9) caratteri sono la lunghezza (in esadecimale)
+            // della chiave contenuta nel messaggio.
+            // Quindi il server guardando il primo carattere capisce il messaggio
+            // contiene una nuova chiave (e quindi la estrae) oppure no
+            prefix = hexlen.length + hexlen + key_crypted;
+        }
 
+        // crittazione simmetrica del messaggio
+        var encryptedMessage = Aes.Ctr.encrypt(plaintext, key_message, 256);
+        // and concatenate our payload message
+        var encrypted = prefix + encryptedMessage;
+
+        return encrypted;
+    }
+
+    /**
+     * Funzione di decrittazione
+     * @param {type} data
+     * @returns {String}
+     */
+    function decrypt_message(data)
+    {
+        serverToken = data.substr(0, token.length);
+        var response = Aes.Ctr.decrypt(data.substr(token.length), key_message, 256);
+        return response;
+    }
+
+    /**
+     * Filtra il contenuto arrivato dal server prima che il client processi i dati
+     * @param {type} strData
+     * @param {type} strType
+     * @returns {String}
+     */
+    function dataFilter (strData, strType)
+    {
+        if (this.xhrUse.getResponseHeader('Cryption-Type') == 'CryptoChannel') {
+            if (this.xhrUse.getResponseHeader('CryptoChannel-Status') != 'ERROR') {
+                return decrypt_message(strData);
+            }
+        }
+        return strData;
+    }
+    
+    /**
+     * Nel caso in cui la chiamata non venga fatta con le intestazioni giuste
+     * il server risponderà con la chiave pubblica da utilizzare.
+     * Questa funzione permette di poter posticipare la chiamata della callback
+     * all'eventuale secondo tentativo dopo aver impostato la nuova chiave e aver
+     * rigenerato le intestazioni e il testo in modo corretto
+     * 
+     * @param {type} callback
+     * @param {type} recall
+     * @param {type} recalled
+     * @returns {Function}
+     */
+    function success (callback, recall, recalled) {
+        return function(ret, stat, xhr)
+        {
+            if (typeof(ret) != typeof('') && cryptionEnable) {
+                console.info('{{nameVar}} Response : ', ret);
+            }
+            if (xhr.getResponseHeader('Cryption-Type') != 'CryptoChannel') {
+                callback(ret, stat, xhr);
+                return;
+            }
+            if (xhr.getResponseHeader('CryptoChannel-Status') == 'ERROR') {
+                pubkey = xhr.responseText;
+                !recalled && recall && recall();
+                return;
+            }
+            
+            if (serverToken != token) {
+                !recalled && recall && recall();
+                return;
+
+            }
+            callback(ret, stat, xhr);
+        }
+    }
+    
+    /**
+     * Funzione che effettua la chiamata ajax senza utilizzare librerie esterne
+     * @param {type} url
+     * @param {type} data
+     * @param {type} callback
+     * @param {type} recalled
+     * @returns {undefined}
+     */
     function doAjax(url, data, callback, recalled)
     {
-
-        function encrypt_message(plaintext)
-        {
-            var prefix = '0';
-            // quando la chiave viene generata ... viene messa nel messaggio
-            if (!key_message) {
-                key_message = randomString(150);
-                console.log('key',key_message);
-
-                var encrypter = new JSEncrypt();
-                encrypter.setPublicKey(pubkey);
-                key_crypted = encrypter.encrypt(key_message);
-                token = randomString(4);
-            }
-            if (token != serverToken) {
-                var hexlen = Number(key_crypted.length).toString(16);
-                prefix = hexlen.length + hexlen + key_crypted;
-            }
-    
-            // crittazione simmetrica
-            var encryptedMessage = Aes.Ctr.encrypt(plaintext, key_message, 256);
-            console.log('encrypt',[plaintext, prefix]);
-            // and concatenate our payload message
-            var encrypted = prefix + encryptedMessage;
-
-            return encrypted;
-        }
-
-        function decrypt_message(data)
-        {
-            var response = Aes.Ctr.decrypt(data, key_message, 256);
-            return response;
-        }
-
         data = data || {};
         if (data && typeof data != typeof "") {
             data = JSON.stringify(data);
         }
-        var xmlhttp = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
-        xmlhttp.onreadystatechange = function() {
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                removeAjax(xmlhttp);
-                console.log(xmlhttp.getResponseHeader('Cryption-Type'));
-                if (xmlhttp.getResponseHeader('Cryption-Type') == 'CryptoChannel') {
-                    serverToken = xmlhttp.getResponseHeader('CryptoChannel-Token');
-                    console.log('ricevuto', serverToken, token, recalled, xmlhttp.getResponseHeader('CryptoChannel-Status'));
-                    console.log(xmlhttp.responseText);
-                    if (serverToken != token) {
-                        if (!recalled) {
-                            doAjax(url, data, callback, 1);
-                        } else {
-                            // TODO: Gestire l'errore
-                        }
-                        return;
-
-                    }
-                    callback(decrypt_message(xmlhttp.responseText));
-                } else {
-                    if (xmlhttp.getResponseHeader('CryptoChannel-Status') == 'ERROR') {
-                        if (!recalled) {
-                            // reimpostazione chiave pubblica
-                            pubkey = xmlhttp.responseText;
-                            key_message = '';
-                            console.log('new symkey');
-                            doAjax(url, data, callback, 1);
-                        } else {
-                            // TODO: Gestire l'errore
-                        }
-                        return;
-                    }
-                    callback(xmlhttp.responseText);
-                }
+        var settings = {};
+        var xhr = this.xhr(false, settings);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                removeAjax(xhr);
+                var response = dataFilter.call(settings, [xhr.responseText, '']);
+                success(callback, function() {
+                    doAjax(url, data, callback, 1);
+                }, recalled)(response, xhr.status, xhr);
             }
         }
-
-        xmlhttp.open("POST", url, true);
-        addAjax(xmlhttp);
-    
-        switch(type) {
-            case 'json':
-                xmlhttp.setRequestHeader('Content-type','application/json');
-                break;
-            case 'plain':
-            case 'html':
-            case 'text':
-                xmlhttp.setRequestHeader('Content-type','text/'+type);
-                break;
-        }
-        if (cryptionEnable) {
-            var message = encrypt_message(data);
-            xmlhttp.setRequestHeader("Cryption-Type", "CryptoChannel");
-            xmlhttp.setRequestHeader("CryptoChannel-Token", token);
-            xmlhttp.send(message);
-        } else {
-            xmlhttp.send(data);
-        }
+        xhr.open("POST", url, true);
+        beforeSend(xhr);
+        xhr.send(data);
     }        
 
-    this.send = doAjax;
+    /**
+     * Abilita/disabilita la crittazione dei dati
+     * @param {type} a
+     * @returns {undefined}
+     */
     this.setCryption = function(a) {
         cryptionEnable = a;
-    } 
+    }
+    
+    /**
+     * Imposta il tio di codifica utilizzato per l'invio dei dati.
+     * Molto importante per il server per capire come trattare i dati una volta
+     * decifrati.
+     * @param {type} a
+     * @returns {undefined}
+     */
     this.setType = function(a) {
         type = a;
     }
-})();
 
+    this.send = doAjax;
+    this.beforeSend = beforeSend;
+    
+    /**
+     * Inizializzatore ogetto Xhr che effettuerà la chiamata.
+     * Se viene passato allora non ne viene creato uno ex novo.
+     * La funzione di send viene arricchita perchè i dati possano essere crittati
+     * prima di essere inviati
+     * 
+     * @param {type} xhr
+     * @param {type} settings
+     * @returns {ActiveXObject|cryptochannelL#2.xhr.xhr|XMLHttpRequest}
+     */
+    this.xhr = function(xhr, settings)
+    {
+        settings = settings || {};
+        if (!xhr) {
+            xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        var __send = xhr.send;
+        xhr.send = function(data) {
+            if (cryptionEnable) {
+                data = encrypt_message(data);
+            }
+            __send.apply(this,[data]);
+        }
+        settings['xhrUse']  = xhr;
+        return xhr;
+    }
+
+    this.success = success;
+
+    this.dataFilter = dataFilter;
+
+    this.filter = function(strData)
+    {
+        if (cryptionEnable) {
+            strData = decrypt_message(strData);
+            if (serverToken != token) {
+                throw 'Dati non validi';
+            }
+            
+        }
+        return strData;
+    }
+    this.init = initSimmetricKey;
+
+    initSimmetricKey();
+
+})();

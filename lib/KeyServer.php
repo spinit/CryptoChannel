@@ -72,10 +72,13 @@ class KeyServer
                 return unserialize($strKey);
             }
         }
-        @file_put_contents($keyFile, "WAIT");
-        $key = new self();
-        @file_put_contents($keyFile, serialize($key));
-        return $key;
+        $esito = @file_put_contents($keyFile, "WAIT");
+        if ($esito) {
+            $key = new self();
+            @file_put_contents($keyFile, serialize($key));
+            return $key;
+        }
+        return null;
     }
     
     protected function __construct(RestoreInterface $sourcer = null)

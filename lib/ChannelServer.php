@@ -17,7 +17,7 @@ class ChannelServer
      */
     public function getKey()
     {
-        return $this->key;
+        return KeyServer::getKey($this->wallet);
     }
     
     public function isCallType($type)
@@ -40,7 +40,7 @@ class ChannelServer
         if (!$wallet) {
             $wallet = new RestoreSession(array('_','key','server'));
         }
-        $this->key = KeyServer::getKey($wallet);
+        $this->wallet = $wallet;
     }
     
     /**
@@ -51,7 +51,7 @@ class ChannelServer
      */
     public function initJavascript($nameVar='ChannelClient')
     {
-        $pubKey = str_replace("\n","\\\n",$this->key->getPublic());
+        $pubKey = str_replace("\n","\\\n",$this->getKey()->getPublic());
         //$prikey = str_replace("\n","\\\n",$this->key->getPrivate());
         
         header('Content-Type: application/javascript');
@@ -77,7 +77,7 @@ class ChannelServer
     {
         if (@$_SERVER['HTTP_CRYPTION_TYPE'] == 'CryptoChannel') {
             try {
-                return $this->key->decrypt($message, @$_SERVER['HTTP_CRYPTOCHANNEL_TOKEN']);
+                return $this->getKey()->decrypt($message, @$_SERVER['HTTP_CRYPTOCHANNEL_TOKEN']);
             } catch (ChannelException $e) {
                 header('CryptoChannel-Status: ERROR');
                 header('CryptoChannel-Message: '.$e->getMessage());
@@ -90,10 +90,16 @@ class ChannelServer
     public function pack($message)
     {
         if (@$_SERVER['HTTP_CRYPTION_TYPE'] == 'CryptoChannel') {
+            $cripted = $this->encrypt($message);
             header('Cryption-Type: CryptoChannel');
-            header('CryptoChannel-Token: '.$this->key->getToken());
-            return $this->key->encrypt($message);
+            return $cripted;
+            
         }
         return $message;
+    }
+    public function encrypt($message)
+    {
+        $key = $this->getKey();
+        return $key->getToken().$key->encrypt($message);
     }
 }

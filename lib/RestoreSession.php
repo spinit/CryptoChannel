@@ -11,28 +11,41 @@ class RestoreSession extends Base implements RestoreInterface
 
     private $varname;
     private $varvar;
+    private $closeSession = false;
     
     public function __construct($varname, $varbuf = 'SESSION')
     {
-        if ($this->util()->session_status() != PHP_SESSION_ACTIVE and $varbuf == 'SESSION') {
-            $this->util()->session_start();
-        }
         if (!is_array($varname)) {
             $varname = array($varname);
         }
-        $varvar = '_'.$varbuf;
         $this->varname = $varname;
-        
-        global ${$varvar};
-        $this->varvar = &${$varvar};
+        $this->bufname = '_'.$varbuf;
     }
-    
+    private function open()
+    {
+        $this->closeSession = false;
+        if ($this->util()->session_status() != PHP_SESSION_ACTIVE and $this->bufname == '_SESSION') {
+            $this->util()->session_start();
+            $this->closeSession = true;
+        }
+        global ${$this->bufname};
+        $this->varvar = &${$this->bufname};
+    }
+    private function close()
+    {
+        if ($this->closeSession) {
+            $this->util()->session_write_close();
+        }
+        unset($this->varvar);
+    }
     public function loadObject()
     {
+        $this->open();
         $session = $this->varvar;
         foreach($this->varname as $name) {
             $session = @$session[$name];
         }
+        $this->close();
         if (!$session) {
             return null;
         }
@@ -41,12 +54,14 @@ class RestoreSession extends Base implements RestoreInterface
 
     public function storeObject($data)
     {
+        $this->open();
         $session = &$this->varvar;
         foreach($this->varname as $name) {
             $value = &$session[$name];
             unset($session);
             $session = &$value;
         }
-        $session = serialize($data);        
+        $session = serialize($data);
+        $this->close();
     }
 }
