@@ -37,10 +37,17 @@ class Util
     {
         self::$logFile = $file;
     }
-    static function log($title, $msg='')
+    static function log($title)
     {
         if (!self::$logFile) {
             return;
+        }
+        $args = func_get_args();
+        array_shift($args);
+        if (count($args)>1) {
+            $msg = $args;
+        } else {
+            $msg = array_shift($args);
         }
         $fp = fopen(self::$logFile,'a');
         if (!$fp) {
@@ -51,7 +58,7 @@ class Util
         $debug = debug_backtrace();
         $file = substr($debug[0]['file'], strlen($root));
         $line = $debug[0]['line'];
-        $content = "== ".date("H:i:s")." == ".getmypid()." == {$file}:{$line} >> $title";
+        $content = date("Ymd H:i:s")." ".getmypid()." : {$file}:{$line} >> $title";
         if ($msg) {
             if (!is_string($msg)) {
                 $msg = print_r($msg, 1);

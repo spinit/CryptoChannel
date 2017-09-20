@@ -5,7 +5,7 @@ namespace CryptoChannel;
  */
 class ChannelClient extends Base
 {
-    private $key = false;
+    private $wallet = false;
     
     private $callType = '';
     
@@ -20,7 +20,7 @@ class ChannelClient extends Base
      */
     public function getKey()
     {
-        return $this->key;
+        return KeyClient::getKey($this->wallet);
     }
     
     /**
@@ -33,10 +33,10 @@ class ChannelClient extends Base
     public function __construct(RestoreInterface $wallet = null)
     {
         if (!$wallet) {
-            $wallet = new RestoreSession(array('_','key','client'));
+            $wallet = new RestoreSession(array('_','crypt-channel','client'));
         }
-        $this->cookie = new RestoreSession(array('_','key','cookie'));
-        $this->key = KeyClient::getKey($wallet);
+        $this->cookie = new RestoreSession(array('_','crypto-channel','cookie'));
+        $this->wallet = $wallet;
         $this->enableCryption();
     }
     
@@ -63,11 +63,13 @@ class ChannelClient extends Base
      */
     public function getContent($url, $data, $cookie = false)
     {
-        /*
-        if (!$this->key->getPublic()) {
+        
+        $key = $this->getKey();
+        if (!$key->getPublic()) {
             $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false, 'cookie'=>$cookie));
-            $this->key->setPublic($pKey);
-        }*/
+            $key->setPublic($pKey);
+        }
+
         $content = $this->send($url, $data, array('crypting'=>$this->returnDataCrypted, 'cookie'=>$cookie));
         return $content;
     }
@@ -87,20 +89,20 @@ class ChannelClient extends Base
      */
     private function send($url, $data='', $option = array())
     {
-        
         $cookies = $this->cookie->loadObject();
         $channelOption = new ChannelOption($option, $cookies, $this->getKey());
         $channelOption->setCallType($this->callType);
         
+        Util::log('send to Server '.$url, $data);
         $opts = array(
           'http'=>array(
             'method'    => $channelOption->getMethod($option),
-            'header'    => $channelOption->getHeader($option),
-                           // preparazione dati da inviare
-            'content'   => $channelOption->sendData($data)
+            // preparazione dati da inviare
+            'content'   => $channelOption->sendData($data),
+            // header generati dalla preparazione dati
+            'header'    => $channelOption->getHeader($option)
           )
         );
-        
         $context = stream_context_create($opts);
         // invio dati
         $content = file_get_contents($url, false, $context);
@@ -112,7 +114,7 @@ class ChannelClient extends Base
             if (!isset($option['stop-reload'])) {
                 // rilettura della chiave pubblica
                 // $pKey = $this->send($this->keyPublicUrl, '', array('crypting' => false));
-                $this->key->setPublic($content);
+                $this->getKey()->setPublic($content);
                 $option['stop-reload'] = 1;
                 return $this->send($url, $data, $option);
             }

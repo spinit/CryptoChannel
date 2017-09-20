@@ -96,9 +96,11 @@ class ChannelOption
         $header = '';
         switch($this->option['type']) {
             case 'json':
-                $header .= "Content-Type: application/json\r\n";
+                $header .= "Content-Type: application/json; charset=UTF-8\r\n";
                 break;
             case 'html':
+                $header .= "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n";
+                break;
             case 'xml':
             case 'plain':
                 $header .= "Content-Type: text/{$this->option['type']}; charset=UTF-8\r\n";
@@ -151,14 +153,19 @@ class ChannelOption
     {
         $data = $this->encodeData($data);
         // i dati vengono crittati se richiesto
-        Util::log('send to Server', $data);
         if ($this->isCrypting() and $this->key) {
             $data = $this->key->encrypt($data);
-            Util::log('crypted', substr($data,0,10));
         }
         return $data;
     }
     
+    /**
+     * Analizza la risposta decidendo come filtrare i dati in funzione degli header pervenuti
+     * @param type $headers
+     * @param type $data
+     * @param type $func
+     * @return type
+     */
     public function parseResponse($headers, $data, $func = false)
     {
         $cryption = '';
@@ -180,13 +187,16 @@ class ChannelOption
                 call_user_func_array($func, array($s));
             }
         }
-        //$content.="\n".json_encode($cookies);
-        Util::log('Cryption Type : ' . $cryption);
-        Util::log('Content from Server', $data);
+        // il debug visualizza solo i primi 100 caratteri
+        $maxLen = 100;
+        $debug = array(substr($data, 0, $maxLen).(strlen($data)>$maxLen ? '...('.(strlen($data)).')' : ''));
         if ($cryption == 'cryptochannel' and $this->key) {
             $data = $this->key->decrypt($data);
-            Util::log('decrypted', $data);
+            $debug[] = substr($data, 0, $maxLen).(strlen($data)>$maxLen ? '...('.(strlen($data)).')' : '');
+            $debug[] = $this->key->getSimmetric();
         }
+        // dati ricevuti dal server
+        Util::log('Content from Server', $debug);
         
         return $data;
     }

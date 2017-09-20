@@ -202,7 +202,7 @@
         xhr.onreadystatechange = function() {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 removeAjax(xhr);
-                var response = dataFilter.call(settings, [xhr.responseText, '']);
+                var response = dataFilter.apply(settings, [xhr.responseText, '']);
                 success(callback, function() {
                     doAjax(url, data, callback, 1);
                 }, recalled)(response, xhr.status, xhr);

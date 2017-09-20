@@ -68,8 +68,12 @@ class KeyClient
     public function setPublic($public)
     {
         $this->pubKey = $public;
+        // forza la ricrittazione della chiave simmetrica
         if ($this->symKey) {
             $this->setSimmetric($this->symKey);
+        }
+        if ($this->sourcer) {
+            $this->sourcer->storeObject($this);
         }
         return $this;
     }
@@ -144,6 +148,7 @@ class KeyClient
             $len = \dechex(\strlen($this->cryKey));
             $prefix = strlen($len) . $len . $this->cryKey;
         }
+        Util::log('encrypt symKey', $this->getSimmetric());
         return $prefix . Util::encrypt($message, $this->getSimmetric());
     }
 
@@ -156,7 +161,8 @@ class KeyClient
     public function decrypt($message)
     {
         // messaggio decrittato con la chiave simmetrica
-        $message_decrypt = Util::decrypt($message, $this->getSimmetric());
+        $this->tokenServer = substr($message, 0, strlen($this->token));
+        $message_decrypt = Util::decrypt(substr($message, strlen($this->token)), $this->getSimmetric());
         return $message_decrypt;
     }
     

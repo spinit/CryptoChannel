@@ -14,16 +14,22 @@ $channelServer = new ChannelServer();
 // Il comando "echo" ritorna al client una stampa lievemente corretta di ciò che gli è stato inviato
 // Assegnando ad "echo" un valore maggiore di zero verrà ritornato al client il valore calcolato da un altro server (se stesso) che riceverà come input quanto fino ad ora calcolato
 // Tale server comunicherà attraverso un'altra connessione crittata con un altro insieme di chiavi.
+
 if (isset($_GET['echo'])) {
     $content = file_get_contents("php://input");
     
-    //Util::setLogFile('/tmp/cryptochannel.log');
-    Util::log('echo '.@$_GET['echo'], substr($content,0,10));
-    Util::log('sym key', $channelServer->getKey()->getSimmetric());
+    // DEBUG ... per attivare il debug decommentare la riga seguente
+    //Util::setLogFile('/tmp/crypto-channel.log');
     
     try {
         
         $data = $channelServer->unpack($content);
+        Util::log('INDEX : dati ricevuti', array(
+            'echo'=>@$_GET['echo'], 
+            'dati ricevuti'=>substr($content,0,10),
+            'dati decrittati'=>$data,
+            'symKey'=>$channelServer->getKey()->getSimmetric())
+        );
         $message = "Ricevuto [{$data}]";
         
         if ($_GET['echo']>0) {

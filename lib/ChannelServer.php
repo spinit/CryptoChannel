@@ -38,7 +38,7 @@ class ChannelServer
     public function __construct(RestoreInterface $wallet = null)
     {
         if (!$wallet) {
-            $wallet = new RestoreSession(array('_','key','server'));
+            $wallet = new RestoreSession(array('_','crypto-channel','server'));
         }
         $this->wallet = $wallet;
     }
